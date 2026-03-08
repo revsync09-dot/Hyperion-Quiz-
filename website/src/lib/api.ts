@@ -1,0 +1,34 @@
+// Internal API Fetchers for Hyperion Website
+// Using relative paths to hit Next.js Serverless Functions in the same deployment
+
+export async function fetchLeaderboard(category = "total_points", page = 1) {
+  try {
+    const res = await fetch(`/api/leaderboard?category=${category}&page=${page}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { users: [], total: 0 };
+    return res.json();
+  } catch (err) {
+    return { users: [], total: 0 };
+  }
+}
+
+export async function fetchPlayer(discordId: string) {
+  try {
+    const res = await fetch(`/api/player/${discordId}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function fetchStats() {
+  try {
+    const res = await fetch(`/api/stats`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (err) {
+    return null;
+  }
+}

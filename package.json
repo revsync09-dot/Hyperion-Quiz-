@@ -1,0 +1,26 @@
+{
+  "name": "quiz-meister",
+  "version": "1.0.0",
+  "description": "A professional Discord bot called Quiz Meister",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "concurrently \"node src/index.js\" \"npm run start --prefix website\"",
+    "dev": "concurrently \"node src/index.js\" \"npm run dev --prefix website\"",
+    "bot": "node src/index.js",
+    "web": "npm run dev --prefix website",
+    "deploy-commands": "node src/utils/deploy-commands.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
+    "cors": "^2.8.6",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
