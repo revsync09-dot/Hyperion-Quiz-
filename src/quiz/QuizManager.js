@@ -200,12 +200,10 @@ async function startNextRound(interaction, game) {
 
     const row = new ActionRowBuilder();
     questionData.choices.forEach((_, index) => {
-        const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
         row.addComponents(
             new ButtonBuilder()
                 .setCustomId(`quiz_ans_${index}`)
                 .setLabel(`${index + 1}`)
-                .setEmoji(getComponentEmoji(keys[index]))
                 .setStyle(ButtonStyle.Secondary)
         );
     });
