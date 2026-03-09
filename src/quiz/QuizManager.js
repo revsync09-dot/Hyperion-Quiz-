@@ -32,6 +32,11 @@ const ROUNDS = [
 
 const activeGames = new Map();
 
+function getChoiceEmojiByIndex(index) {
+    const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
+    return getEmoji(keys[index]) || `${index + 1}.`;
+}
+
 async function fetchQuestion(categoryId, difficulty) {
     try {
         const response = await fetch(
@@ -174,10 +179,7 @@ async function startNextRound(interaction, game) {
         `Sector: **${category.name}**`;
 
     const choicesText = questionData.choices
-        .map((choice, index) => {
-            const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
-            return `${getEmoji(keys[index])} ${choice}`;
-        })
+        .map((choice, index) => `${getChoiceEmojiByIndex(index)} ${choice}`)
         .join('\n');
 
     const questionContent = 
@@ -243,8 +245,21 @@ async function startNextRound(interaction, game) {
             return;
         }
 
+        const selectedAnswer = questionData.choices[choiceIndex];
+        const correctAnswer = questionData.choices[questionData.correctIndex];
+
         await buttonInteraction.reply({
-            ...buildError(`Incorrect. Verified answer: **${questionData.choices[questionData.correctIndex]}**`).toJSON(),
+            ...buildPanel({
+                icon: getEmoji('ERROR'),
+                title: 'ANSWER REJECTED',
+                accentColor: 0xff4444,
+                lines: [
+                    `Your response: ${getChoiceEmojiByIndex(choiceIndex)} **${selectedAnswer}**`,
+                    `Correct response: ${getChoiceEmojiByIndex(questionData.correctIndex)} **${correctAnswer}**`,
+                    '',
+                    'No points awarded for this round.'
+                ]
+            }).toJSON(),
             flags: 64
         });
     });
