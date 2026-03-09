@@ -11,6 +11,7 @@ const {
 const { getEmoji, getComponentEmoji } = require('../utils/emojiManager');
 const User = require('../database/User');
 const supabase = require('../database/supabase');
+const localQuestions = require('./questions.json');
 
 const PRIMARY_GUILD_ID = '1422969507734884374';
 
@@ -31,6 +32,13 @@ const ROUNDS = [
 ];
 
 const activeGames = new Map();
+const CATEGORY_ALIASES = {
+    Gaming: ['Gaming'],
+    Anime: ['Anime'],
+    'General Knowledge': ['General Knowledge'],
+    Movies: ['Movies', 'Movies & Series'],
+    Music: ['Music']
+};
 
 function getChoiceEmojiByIndex(index) {
     const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
@@ -47,6 +55,41 @@ function getChoiceButtonEmojiByIndex(index) {
 
     const safeUnicodeFallbacks = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
     return safeUnicodeFallbacks[index] || `${index + 1}`;
+}
+
+function shuffleArray(items) {
+    return [...items].sort(() => Math.random() - 0.5);
+}
+
+function buildQuestionKey(question) {
+    return `${question.category}|${question.difficulty}|${question.question}`;
+}
+
+function getLocalQuestion(categoryName, difficulty, usedQuestions) {
+    const allowedCategories = CATEGORY_ALIASES[categoryName] || [categoryName];
+    const pool = localQuestions.filter((question) =>
+        allowedCategories.includes(question.category) &&
+        question.difficulty === difficulty &&
+        !usedQuestions.has(buildQuestionKey(question))
+    );
+
+    if (pool.length === 0) {
+        return null;
+    }
+
+    const selected = pool[Math.floor(Math.random() * pool.length)];
+    const correctAnswer = selected.choices[selected.correctIndex];
+    const shuffledChoices = shuffleArray(selected.choices);
+    const correctIndex = shuffledChoices.indexOf(correctAnswer);
+
+    usedQuestions.add(buildQuestionKey(selected));
+
+    return {
+        question: selected.question,
+        choices: shuffledChoices,
+        correctIndex,
+        source: 'local'
+    };
 }
 
 async function fetchQuestion(categoryId, difficulty) {
@@ -75,7 +118,7 @@ async function fetchQuestion(categoryId, difficulty) {
         const choices = [correctAnswer, ...incorrectAnswers].sort(() => Math.random() - 0.5);
         const correctIndex = choices.indexOf(correctAnswer);
 
-        return { question, choices, correctIndex };
+        return { question, choices, correctIndex, source: 'opentdb' };
     } catch (error) {
         console.error('[QUIZ] Fetch error:', error);
         return null;
@@ -96,7 +139,8 @@ async function startLobby(interaction) {
         channelId: interaction.channelId,
         players: new Map(),
         round: 0,
-        gameState: 'lobby'
+        gameState: 'lobby',
+        usedQuestions: new Set()
     };
 
     activeGames.set(interaction.channelId, game);
@@ -174,7 +218,9 @@ async function startNextRound(interaction, game) {
 
     const roundInfo = ROUNDS[game.round - 1];
     const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-    const questionData = await fetchQuestion(category.id, roundInfo.apiDiff);
+    const questionData =
+        getLocalQuestion(category.name, roundInfo.level, game.usedQuestions) ||
+        await fetchQuestion(category.id, roundInfo.apiDiff);
 
     if (!questionData) {
         activeGames.delete(game.channelId);
@@ -185,7 +231,6 @@ async function startNextRound(interaction, game) {
 
     const headerText =
         `${getEmoji('CHART')} **HYPERION ROUND ${game.round} / 5**\n` +
-        `**MISSION DATA**\n` +
         `Complexity: **${roundInfo.level}**\n` +
         `Value: **${roundInfo.points}** ${coinEmoji}\n` +
         `Sector: **${category.name}**`;
