@@ -11,13 +11,13 @@ module.exports = {
         .setDescription('Access your Hyperion server capital records.'),
     async execute(interaction) {
         if (interaction.guildId !== PRIMARY_GUILD_ID) {
-            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
+            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), flags: 64 });
         }
 
         let dbUser = await User.getOrCreate(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL());
         
         if (!dbUser) {
-            return interaction.reply({ ...buildError("Player not identified in Hyperion database.").toJSON(), ephemeral: true });
+            return interaction.reply({ ...buildError("Player not identified in Hyperion database.").toJSON(), flags: 64 });
         }
 
         const coinEmoji = getEmoji('COIN');

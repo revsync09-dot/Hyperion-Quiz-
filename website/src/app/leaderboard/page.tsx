@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Trophy, Coins, Star, Target, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { fetchLeaderboard } from "@/lib/api";
 import Link from "next/link";
+import DiscordEmoji from "@/components/DiscordEmoji";
 
 const TABS = [
   { key: "total_points", label: "Total Points", icon: Target },
@@ -38,16 +39,16 @@ export default function LeaderboardPage() {
   const totalPages = Math.ceil(total / 10) || 1;
 
   const rankEmoji = (rank: number) => {
-    if (rank === 1) return "🥇";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
+    if (rank === 1) return <DiscordEmoji name="FIRST" className="w-8 h-8 glow-ring rounded-full" />;
+    if (rank === 2) return <DiscordEmoji name="SECOND" className="w-8 h-8" />;
+    if (rank === 3) return <DiscordEmoji name="THIRD" className="w-8 h-8" />;
     return `${rank}`;
   };
 
   const getValueDisplay = (user: any) => {
-    if (tab === "coins") return `${(user.coins || 0).toLocaleString()} 🪙`;
+    if (tab === "coins") return <div className="flex items-center justify-end gap-2">{(user.coins || 0).toLocaleString()} <DiscordEmoji name="COIN" className="w-6 h-6" /></div>;
     if (tab === "quiz_wins") return `${user.quiz_wins || 0} Wins`;
-    if (tab === "level") return `Level ${user.level || 1}`;
+    if (tab === "level") return <div className="flex items-center justify-end gap-2 text-[#9ca3af]">Level {user.level || 1} <DiscordEmoji name="LEVEL" className="w-5 h-5 opacity-50" /></div>;
     return `${(user.total_points || 0).toLocaleString()} Pts`;
   };
 
@@ -160,7 +161,7 @@ export default function LeaderboardPage() {
                         <div className="col-span-2 text-right font-black text-[#9ca3af]">
                           LEVEL {user.level || 1}
                         </div>
-                        <div className="col-span-2 text-right font-black text-xl bg-gradient-to-b from-white to-[#9ca3af] bg-clip-text text-transparent">
+                        <div className="col-span-2 text-right font-black text-xl hover:text-white transition-colors">
                           {getValueDisplay(user)}
                         </div>
                       </motion.div>

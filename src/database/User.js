@@ -102,6 +102,10 @@ const User = {
                 correct_answers: 0,
                 games_played: 0
             });
+            if (!user) {
+                // If it failed to create, someone else probably inserted it in the meantime
+                user = await this.findOne({ discord_id });
+            }
         } else if (username || avatar) {
             // Update profile if changed
             if (user.username !== username || user.avatar !== avatar) {

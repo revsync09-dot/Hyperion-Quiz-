@@ -50,11 +50,11 @@ async function fetchQuestion(catId, difficulty) {
 
 async function startLobby(interaction) {
     if (interaction.guildId !== PRIMARY_GUILD_ID) {
-        return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
+        return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), flags: 64 });
     }
 
     if (activeGames.has(interaction.channelId)) {
-        return interaction.reply({ ...buildError("A quiz is already active in this channel!").toJSON(), ephemeral: true });
+        return interaction.reply({ ...buildError("A quiz is already active in this channel!").toJSON(), flags: 64 });
     }
 
     const game = {
@@ -78,17 +78,17 @@ async function startLobby(interaction) {
     );
     container.addActionRowComponents(row);
 
-    const message = await interaction.reply({ ...container.toJSON(), fetchReply: true });
+    const message = await interaction.reply({ ...container.toJSON(), withResponse: true });
 
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
 
     collector.on('collect', async i => {
         if (i.customId === 'quiz_join') {
             if (game.players.has(i.user.id)) {
-                return i.reply({ ...buildError("Authentication already confirmed.").toJSON(), ephemeral: true });
+                return i.reply({ ...buildError("Authentication already confirmed.").toJSON(), flags: 64 });
             }
             game.players.set(i.user.id, { points: 0, correct_answers: 0, username: i.user.username, avatar: i.user.displayAvatarURL() });
-            await i.reply({ ...buildSuccess("Join Confirmed", "Session joined. Stand by for round start. 🚀").toJSON(), ephemeral: true });
+            await i.reply({ ...buildSuccess("Join Confirmed", "Session joined. Stand by for round start. 🚀").toJSON(), flags: 64 });
         }
     });
 
@@ -149,10 +149,10 @@ async function startNextRound(interaction, game) {
     const answered = new Set();
     collector.on('collect', async i => {
         if (!game.players.has(i.user.id)) {
-            return i.reply({ ...buildError("You are not authorized for this session.").toJSON(), ephemeral: true });
+            return i.reply({ ...buildError("You are not authorized for this session.").toJSON(), flags: 64 });
         }
         if (answered.has(i.user.id)) {
-            return i.reply({ ...buildError("Response already recorded.").toJSON(), ephemeral: true });
+            return i.reply({ ...buildError("Response already recorded.").toJSON(), flags: 64 });
         }
 
         answered.add(i.user.id);
@@ -162,9 +162,9 @@ async function startNextRound(interaction, game) {
         if (choiceIdx === qData.correctIndex) {
             playerData.points += roundInfo.points;
             playerData.correct_answers++;
-            await i.reply({ ...buildSuccess("Outcome accepted", `✅ **Positive.** Outcome accepted (+${roundInfo.points} Pts)`).toJSON(), ephemeral: true });
+            await i.reply({ ...buildSuccess("Outcome accepted", `✅ **Positive.** Outcome accepted (+${roundInfo.points} Pts)`).toJSON(), flags: 64 });
         } else {
-            await i.reply({ ...buildError(`❌ **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`).toJSON(), ephemeral: true });
+            await i.reply({ ...buildError(`❌ **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`).toJSON(), flags: 64 });
         }
     });
 

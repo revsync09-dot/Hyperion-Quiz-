@@ -82,10 +82,12 @@ class ContainerBuilder {
         this.embed.setFooter({ text: this.footerText });
         this.embed.setTimestamp();
         
-        return {
-            embeds: [this.embed.toJSON()],
-            components: this.actionRows.map(r => r.toJSON())
-        };
+        const payload = { embeds: [this.embed.toJSON()] };
+        if (this.actionRows.length > 0) {
+            payload.components = this.actionRows.map(r => r.toJSON());
+        }
+        
+        return payload;
     }
 }
 

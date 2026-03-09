@@ -55,4 +55,3 @@ function initScheduler(client) {
 }
 
 module.exports = { initScheduler };
- Josephson

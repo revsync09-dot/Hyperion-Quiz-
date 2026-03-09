@@ -32,7 +32,7 @@ module.exports = {
         ),
     async execute(interaction) {
         if (interaction.guildId !== PRIMARY_GUILD_ID) {
-            return interaction.reply({ ...buildError("Access denied. Target guild mismatch.").toJSON(), ephemeral: true });
+            return interaction.reply({ ...buildError("Access denied. Target guild mismatch.").toJSON(), flags: 64 });
         }
 
         if (interaction.options.getSubcommand() === 'update') {
@@ -59,10 +59,10 @@ module.exports = {
                         new TextDisplayBuilder().setContent(`✅ **PROTOCOL BROADCAST SUCCESSFUL**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **${category}**\nVersion: **${version}**\nTitle: **${title}**\n\nThe Quiz Meister has been updated with this system log.`)
                     ));
 
-                await interaction.reply({ ...container.toJSON(), ephemeral: true });
+                await interaction.reply({ ...container.toJSON(), flags: 64 });
             } catch (err) {
                 console.error('[ADMIN] Update broadcast failed:', err);
-                await interaction.reply({ ...buildError("Protocol Failure: Could not push log to database.").toJSON(), ephemeral: true });
+                await interaction.reply({ ...buildError("Protocol Failure: Could not push log to database.").toJSON(), flags: 64 });
             }
             return;
         }
@@ -89,10 +89,10 @@ module.exports = {
                         new TextDisplayBuilder().setContent(`✅ **AUTOMATED QUIZ DEPLOYMENT CONFIGURED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nTarget Channel: <#${channel.id}>\nInterval: **${interval} minutes**\nStatus: **${enabled ? 'ACTIVE' : 'DISABLED'}**`)
                     ));
 
-                await interaction.reply({ ...container.toJSON(), ephemeral: true });
+                await interaction.reply({ ...container.toJSON(), flags: 64 });
             } catch (err) {
                 console.error('[ADMIN] Autoquiz config failed:', err);
-                await interaction.reply({ ...buildError("Protocol Failure: Could not update configuration.").toJSON(), ephemeral: true });
+                await interaction.reply({ ...buildError("Protocol Failure: Could not update configuration.").toJSON(), flags: 64 });
             }
         }
     }

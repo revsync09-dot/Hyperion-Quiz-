@@ -6,6 +6,7 @@ import { Trophy, Coins, Star, Gamepad2, Target, Zap, Clock, TrendingUp } from "l
 import { fetchPlayer } from "@/lib/api";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import Link from "next/link";
+import DiscordEmoji from "@/components/DiscordEmoji";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -56,10 +57,10 @@ export default function PlayerPage() {
   }));
 
   const statCards = [
-    { label: "Current Rank", value: `#${p.rank || "?"}`, icon: Trophy, color: "from-[#6c63ff] to-[#9d4edd]" },
-    { label: "Hyperion Coins", value: (p.coins || 0).toLocaleString(), icon: Coins, color: "from-amber-400 to-orange-500" },
+    { label: "Current Rank", value: `#${p.rank || "?"}`, icon: () => <DiscordEmoji name="TROPHY" className="w-6 h-6 text-white" />, color: "from-[#6c63ff] to-[#9d4edd]" },
+    { label: "Quiz Meister Coins", value: (p.coins || 0).toLocaleString(), icon: () => <DiscordEmoji name="COIN" className="w-6 h-6 text-white" />, color: "from-amber-400 to-orange-500" },
     { label: "Total Points", value: (p.total_points || 0).toLocaleString(), icon: Star, color: "from-emerald-400 to-teal-500" },
-    { label: "Current Level", value: p.level || 1, icon: TrendingUp, color: "from-blue-400 to-cyan-500" },
+    { label: "Current Level", value: p.level || 1, icon: () => <DiscordEmoji name="LEVEL" className="w-5 h-5 text-white" />, color: "from-blue-400 to-cyan-500" },
   ];
 
   return (
@@ -98,7 +99,7 @@ export default function PlayerPage() {
                 {p.username || "Anonymous"}
               </h1>
               <p className="text-[#9ca3af] text-lg font-bold uppercase tracking-widest max-w-xl">
-                Member of the Hyperion Server Guild since {new Date(p.created_at).toLocaleDateString()}
+                Member of the Quiz Meister Server since {new Date(p.created_at).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -108,7 +109,7 @@ export default function PlayerPage() {
             {statCards.map((s, i) => (
               <div key={i} className="glass-card p-8 border-white/5 group hover:border-[#6c63ff]/30 transition-all">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 transition-transform`}>
-                  <s.icon size={22} className="text-white" />
+                  <s.icon className="text-white w-[22px] h-[22px] flex items-center justify-center" />
                 </div>
                 <div className="text-sm font-black text-[#9ca3af] uppercase tracking-widest mb-2">{s.label}</div>
                 <div className="text-3xl font-black tracking-tighter">{s.value}</div>

@@ -11,13 +11,13 @@ module.exports = {
         .setDescription('Claim your Hyperion capital distribution.'),
     async execute(interaction) {
         if (interaction.guildId !== PRIMARY_GUILD_ID) {
-            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
+            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), flags: 64 });
         }
 
         let dbUser = await User.getOrCreate(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL());
         
         if (!dbUser) {
-            return interaction.reply({ ...buildError("Player not identified in Hyperion Database.").toJSON(), ephemeral: true });
+            return interaction.reply({ ...buildError("Player not identified in Hyperion Database.").toJSON(), flags: 64 });
         }
 
         const now = new Date();
@@ -34,7 +34,7 @@ module.exports = {
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(`❌ **COOLDOWN ACTIVE**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **Daily Capital Distribution**\nStatus: **Denied**\nAuthentication: **Invalid**\n\nRetry authorized in **${hours}h ${minutes}m**.`)));
-            return interaction.reply({ ...container.toJSON(), ephemeral: true });
+            return interaction.reply({ ...container.toJSON(), flags: 64 });
         }
 
         let streak = dbUser.daily_streak || 0;

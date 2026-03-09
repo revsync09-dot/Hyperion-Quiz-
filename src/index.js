@@ -78,7 +78,7 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.guildId !== PRIMARY_GUILD_ID) {
         const errorView = buildError("This bot only works inside the Hyperion server.");
         if (interaction.isRepliable()) {
-          return interaction.reply({ ...errorView.toJSON(), ephemeral: true }).catch(() => {});
+          return interaction.reply({ ...errorView.toJSON(), flags: 64 }).catch(() => {});
         }
         return;
     }
@@ -94,9 +94,9 @@ client.on(Events.InteractionCreate, async interaction => {
             console.error('[CORE] Command Error:', error);
             const errorView = buildError('An unexpected error occurred in the Hyperion core.');
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ ...errorView.toJSON(), ephemeral: true });
+                await interaction.followUp({ ...errorView.toJSON(), flags: 64 });
             } else {
-                await interaction.reply({ ...errorView.toJSON(), ephemeral: true });
+                await interaction.reply({ ...errorView.toJSON(), flags: 64 });
             }
         }
     } 
@@ -140,7 +140,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
             if (customId === 'btn_view_stats') {
                 const infoView = buildInfo("Global Analytics", "Detailed activity dashboards and historical logs are available on our official website terminal.");
-                await interaction.reply({ ...infoView.toJSON(), ephemeral: true });
+                await interaction.reply({ ...infoView.toJSON(), flags: 64 });
                 return;
             }
         } catch (err) {
