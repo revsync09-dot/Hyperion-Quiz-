@@ -79,3 +79,23 @@ BEGIN
     END IF;
 END
 $$;
+
+-- 4. System Updates Log Table
+CREATE TABLE IF NOT EXISTS system_updates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    version TEXT NOT NULL,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'GENERAL', -- BOT, WEBSITE, GENERAL
+    content TEXT NOT NULL, -- Detailed description
+    is_major BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Policies for system_updates
+ALTER TABLE system_updates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all read access to system_updates" ON system_updates FOR SELECT USING (true);
+
+-- Insert Initial Update
+INSERT INTO system_updates (version, title, category, content, is_major)
+VALUES 
+('v2.5.0', 'Hyperion Engagement Protocol: Launch', 'GENERAL', 'Initial v2.5.0 release of the Hyperion bot and website ecosystem. Features full Supabase integration, live status tracking, and a premium terminal-inspired UI.', true);

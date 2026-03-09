@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/stats", label: "Stats", icon: BarChart3 },
+  { href: "/updates", label: "Updates", icon: Radio },
 ];
 
 export default function Navbar() {

@@ -26,6 +26,7 @@ export default function Footer() {
               <li><Link href="/" className="text-sm text-[#9ca3af] hover:text-white transition-colors">Home</Link></li>
               <li><Link href="/leaderboard" className="text-sm text-[#9ca3af] hover:text-white transition-colors">Leaderboard</Link></li>
               <li><Link href="/stats" className="text-sm text-[#9ca3af] hover:text-white transition-colors">Statistics</Link></li>
+              <li><Link href="/updates" className="text-sm text-[#9ca3af] hover:text-white transition-colors">Update Log</Link></li>
             </ul>
           </div>
 

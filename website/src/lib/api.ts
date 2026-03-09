@@ -42,3 +42,13 @@ export async function fetchBotStatus() {
     return { status: 'offline', active_games: 0 };
   }
 }
+
+export async function fetchUpdates() {
+  try {
+    const res = await fetch(`/api/updates`, { cache: "no-store" });
+    if (!res.ok) return { updates: [] };
+    return res.json();
+  } catch (err) {
+    return { updates: [] };
+  }
+}
