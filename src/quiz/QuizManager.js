@@ -42,6 +42,19 @@ const CATEGORY_ALIASES = {
     Music: ['Music']
 };
 
+async function touchAutoQuizCooldown(target) {
+    const guildId = target?.guildId || target?.autoQuizGuildId;
+
+    if (!guildId || !target?.isAutoDeploy) {
+        return;
+    }
+
+    await supabase
+        .from('guild_config')
+        .update({ last_auto_quiz: new Date().toISOString() })
+        .eq('guild_id', guildId);
+}
+
 function getChoiceEmojiByIndex(index) {
     const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
     return getEmoji(keys[index]) || `${index + 1}.`;
@@ -139,6 +152,8 @@ async function startLobby(interaction) {
 
     const game = {
         channelId: interaction.channelId,
+        guildId: interaction.guildId,
+        isAutoDeploy: Boolean(interaction.isAutoDeploy),
         players: new Map(),
         round: 0,
         gameState: 'lobby',
@@ -197,6 +212,7 @@ async function startLobby(interaction) {
 
     collector.on('end', async () => {
         if (game.players.size === 0) {
+            await touchAutoQuizCooldown(game).catch(console.error);
             activeGames.delete(interaction.channelId);
             if (interaction.isAutoDeploy) return; // Silent abort if automated
             return interaction.followUp(buildError('No participants identified. Protocol aborted.').toJSON()).catch(console.error);
@@ -206,6 +222,7 @@ async function startLobby(interaction) {
             await startNextRound(interaction, game);
         } catch (error) {
             console.error('[QUIZ] Critical error starting next round:', error);
+            await touchAutoQuizCooldown(game).catch(console.error);
             activeGames.delete(interaction.channelId);
         }
     });
@@ -225,6 +242,7 @@ async function startNextRound(interaction, game) {
         await fetchQuestion(category.id, roundInfo.apiDiff);
 
     if (!questionData) {
+        await touchAutoQuizCooldown(game).catch(console.error);
         activeGames.delete(game.channelId);
         return interaction.followUp(buildError('Data stream interrupted. Session terminated.').toJSON());
     }
@@ -324,6 +342,7 @@ async function startNextRound(interaction, game) {
 
     collector.on('end', async () => {
         if (answered.size === 0) {
+            await touchAutoQuizCooldown(game).catch(console.error);
             activeGames.delete(game.channelId);
 
             await interaction.channel.send(
@@ -345,12 +364,14 @@ async function startNextRound(interaction, game) {
             await startNextRound(interaction, game);
         } catch (error) {
             console.error('[QUIZ] Critical error continuing round loop:', error);
+            await touchAutoQuizCooldown(game).catch(console.error);
             activeGames.delete(game.channelId);
         }
     });
 }
 
 async function endQuiz(interaction, game) {
+    await touchAutoQuizCooldown(game).catch(console.error);
     activeGames.delete(game.channelId);
 
     const players = Array.from(game.players.entries()).map(([discord_id, data]) => ({ discord_id, ...data }));
