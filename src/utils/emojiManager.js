@@ -1,4 +1,4 @@
-// Emoji Manager - Robust fetch and cache system
+// Emoji Manager - Stable resolver for text and component payloads
 const emojiCache = new Map();
 const emojiIdCache = new Map();
 
@@ -26,10 +26,16 @@ const EMOJI_CONFIG = {
     FOUR: { names: ['four', '4', 'circle4', 'number4'], fallback: '4️⃣' }
 };
 
+function getFallbackEmoji(key) {
+    return EMOJI_CONFIG[key]?.fallback || '❔';
+}
+
 function parseEmojiMarkup(value) {
-    if (!value || typeof value !== 'string') return null;
+    if (typeof value !== 'string') return null;
+
     const match = value.trim().match(/^<(a?):([^:>]+):(\d+)>$/);
     if (!match) return null;
+
     return {
         id: match[3],
         name: match[2],
@@ -38,101 +44,97 @@ function parseEmojiMarkup(value) {
     };
 }
 
-function resolveEmojiRecord(keyOrValue) {
-    if (!keyOrValue) return null;
+function resolveCachedEmojiByName(name) {
+    if (!name) return null;
 
-    // 1. Try as Discord Markup
-    const parsed = parseEmojiMarkup(keyOrValue);
-    if (parsed) return parsed;
+    const normalizedName = name.replace(/^:|:$/g, '').trim().toLowerCase();
+    if (!normalizedName) return null;
 
-    // 2. Try as ID
-    if (/^\d+$/.test(keyOrValue)) {
-        return emojiIdCache.get(keyOrValue) || null;
+    const cached = emojiCache.get(normalizedName);
+    if (!cached) return null;
+
+    return parseEmojiMarkup(cached);
+}
+
+function resolveEnvEmoji(key) {
+    const envVal = process.env[`EMOJI_${key}`]?.trim();
+    if (!envVal) return null;
+
+    if (/^\d+$/.test(envVal)) {
+        return emojiIdCache.get(envVal) || { id: envVal };
     }
 
-    // 3. Try as Name (normalized)
-    const normalized = keyOrValue.replace(/^:|:$/g, '').toLowerCase();
-    const formatted = emojiCache.get(normalized);
-    if (formatted) return parseEmojiMarkup(formatted);
+    const parsed = parseEmojiMarkup(envVal);
+    if (parsed) return parsed;
 
-    return null;
+    return resolveCachedEmojiByName(envVal);
 }
 
 async function loadEmojis(client) {
     console.log('[EMOJI] Initializing Global Metadata Sync...');
     let total = 0;
-    
-    // Clear caches
+
     emojiCache.clear();
     emojiIdCache.clear();
-
-    const guildIds = (process.env.EMOJI_GUILD_IDS || '').split(',').map(id => id.trim()).filter(id => id);
 
     for (const guild of client.guilds.cache.values()) {
         try {
             const emojis = await guild.emojis.fetch();
-            emojis.forEach(e => {
+            emojis.forEach((emoji) => {
                 const record = {
-                    id: e.id,
-                    name: e.name,
-                    animated: e.animated,
-                    formatted: e.toString()
+                    id: emoji.id,
+                    name: emoji.name,
+                    animated: emoji.animated,
+                    formatted: emoji.toString()
                 };
-                emojiIdCache.set(e.id, record);
-                emojiCache.set(e.name, record.formatted);
-                emojiCache.set(e.name.toLowerCase(), record.formatted);
+
+                emojiIdCache.set(emoji.id, record);
+                if (emoji.name) {
+                    emojiCache.set(emoji.name.toLowerCase(), record.formatted);
+                }
             });
             total += emojis.size;
             console.log(`[EMOJI] Synced ${emojis.size} units from: ${guild.name}`);
-        } catch (err) {
-            console.warn(`[EMOJI] Guild Sync Failed (${guild.id}):`, err.message);
+        } catch (error) {
+            console.warn(`[EMOJI] Guild Sync Failed (${guild.id}):`, error.message);
         }
     }
+
     console.log(`[EMOJI] Sync Complete. ${total} units in local memory.`);
 }
 
 function getEmoji(key) {
-    // 1. Env check
-    const envVal = process.env[`EMOJI_${key}`];
-    if (envVal) {
-        const record = resolveEmojiRecord(envVal);
-        if (record) return record.formatted;
-        // If it's a raw ID but not in cache, we still return the ID as text 
-        // to avoid incorrect fallbacks if the user specifically wanted that ID.
-        return envVal;
+    const envEmoji = resolveEnvEmoji(key);
+    if (envEmoji?.formatted) {
+        return envEmoji.formatted;
     }
 
-    // 2. Config check
-    const config = EMOJI_CONFIG[key];
-    if (config) {
-        for (const name of config.names) {
-            const record = resolveEmojiRecord(name);
-            if (record) return record.formatted;
+    const names = EMOJI_CONFIG[key]?.names || [];
+    for (const name of names) {
+        const cached = resolveCachedEmojiByName(name);
+        if (cached?.formatted) {
+            return cached.formatted;
         }
-        return config.fallback;
     }
 
-    return '❔';
+    return getFallbackEmoji(key);
 }
 
 function getComponentEmoji(key) {
-    const envVal = process.env[`EMOJI_${key}`];
-    if (envVal) {
-        const record = resolveEmojiRecord(envVal);
-        if (record) return { id: record.id, name: record.name, animated: record.animated };
-        if (!/[:<>]/.test(envVal)) return envVal;
+    const envEmoji = resolveEnvEmoji(key);
+    if (envEmoji?.id) {
+        return { id: envEmoji.id };
     }
 
-    const config = EMOJI_CONFIG[key];
-    if (config) {
-        for (const name of config.names) {
-            const record = resolveEmojiRecord(name);
-            if (record) return { id: record.id, name: record.name, animated: record.animated };
+    const names = EMOJI_CONFIG[key]?.names || [];
+    for (const name of names) {
+        const cached = resolveCachedEmojiByName(name);
+        if (cached?.id) {
+            return { id: cached.id };
         }
-        return config.fallback;
     }
 
-    return '❔';
+    return getFallbackEmoji(key);
 }
 
 function getCustomEmoji(name) {

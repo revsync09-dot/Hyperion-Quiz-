@@ -31,11 +31,22 @@ const ROUNDS = [
 ];
 
 const activeGames = new Map();
-const BUTTON_CHOICE_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
 
 function getChoiceEmojiByIndex(index) {
     const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
     return getEmoji(keys[index]) || `${index + 1}.`;
+}
+
+function getChoiceButtonEmojiByIndex(index) {
+    const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
+    const componentEmoji = getComponentEmoji(keys[index]);
+
+    if (typeof componentEmoji === 'object' && componentEmoji?.id) {
+        return componentEmoji;
+    }
+
+    const safeUnicodeFallbacks = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
+    return safeUnicodeFallbacks[index] || `${index + 1}`;
 }
 
 async function fetchQuestion(categoryId, difficulty) {
@@ -205,7 +216,7 @@ async function startNextRound(interaction, game) {
             new ButtonBuilder()
                 .setCustomId(`quiz_ans_${index}`)
                 .setLabel(`${index + 1}`)
-                .setEmoji(BUTTON_CHOICE_EMOJIS[index] || `${index + 1}️⃣`)
+                .setEmoji(getChoiceButtonEmojiByIndex(index))
                 .setStyle(ButtonStyle.Secondary)
         );
     });
