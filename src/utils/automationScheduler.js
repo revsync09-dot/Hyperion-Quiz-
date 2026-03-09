@@ -1,6 +1,8 @@
 const supabase = require('../database/supabase');
 const QuizManager = require('../quiz/QuizManager');
 
+const runningGuilds = new Set();
+
 async function checkAutomatedQuizzes(client) {
     try {
         const { data: configs, error } = await supabase
@@ -14,46 +16,73 @@ async function checkAutomatedQuizzes(client) {
         const now = new Date();
 
         for (const config of configs) {
+            if (runningGuilds.has(config.guild_id)) {
+                continue;
+            }
+
             const lastQuiz = config.last_auto_quiz ? new Date(config.last_auto_quiz) : new Date(0);
-            const intervalMs = config.quiz_interval_minutes * 1000; // stored as seconds now
+            const intervalMs = config.quiz_interval_minutes * 1000;
 
-            if (now - lastQuiz >= intervalMs) {
-                const guild = client.guilds.cache.get(config.guild_id);
-                if (!guild) continue;
+            if (now - lastQuiz < intervalMs) {
+                continue;
+            }
 
-                const channel = guild.channels.cache.get(config.quiz_channel_id);
-                if (!channel) continue;
+            const guild = client.guilds.cache.get(config.guild_id);
+            if (!guild) continue;
 
-                // Mocking an interaction for startLobby
+            const channel = guild.channels.cache.get(config.quiz_channel_id);
+            if (!channel) continue;
+
+            runningGuilds.add(config.guild_id);
+
+            try {
+                let lastMessage = null;
+
                 const fakeInteraction = {
                     isAutoDeploy: true,
                     channelId: channel.id,
-                    channel: channel,
+                    channel,
                     user: client.user,
                     guildId: config.guild_id,
-                    reply: async (msg) => channel.send(msg).catch(() => {}), // Ignore send errors
-                    followUp: async (msg) => channel.send(msg).catch(() => {}),
-                    fetchReply: async () => {}, // mock
-                    deferReply: async () => {}, // mock
-                    editReply: async (msg) => channel.send(msg).catch(() => {}), // mock
+                    reply: async (payload) => {
+                        lastMessage = await channel.send(payload);
+                        return lastMessage;
+                    },
+                    followUp: async (payload) => {
+                        lastMessage = await channel.send(payload);
+                        return lastMessage;
+                    },
+                    fetchReply: async () => lastMessage,
+                    deferReply: async () => {},
+                    editReply: async (payload) => {
+                        lastMessage = await channel.send(payload);
+                        return lastMessage;
+                    }
                 };
+
                 console.log(`[AUTO-QUIZ] Initiating protocol in ${guild.name} (#${channel.name})`);
                 await QuizManager.startLobby(fakeInteraction);
 
-                // Update last run time
-                await supabase
+                const { error: updateError } = await supabase
                     .from('guild_config')
-                    .update({ last_auto_quiz: now })
+                    .update({ last_auto_quiz: new Date().toISOString() })
                     .eq('guild_id', config.guild_id);
+
+                if (updateError) {
+                    throw updateError;
+                }
+            } catch (error) {
+                console.error('[AUTO-QUIZ] Scheduler Failure:', error.message);
+            } finally {
+                runningGuilds.delete(config.guild_id);
             }
         }
-    } catch (err) {
-        console.error('[AUTO-QUIZ] Scheduler Failure:', err.message);
+    } catch (error) {
+        console.error('[AUTO-QUIZ] Scheduler Failure:', error.message);
     }
 }
 
 function initScheduler(client) {
-    // Check every 10 seconds
     setInterval(() => checkAutomatedQuizzes(client), 10000);
 }
 
