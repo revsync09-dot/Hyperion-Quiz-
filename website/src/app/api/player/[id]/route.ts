@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await (params as any); // id is Discord ID
+  const { id } = await params; // id is Discord ID
 
   try {
     // 1. Fetch User by discord_id
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Player not identified in Hyperion database' }, { status: 404 });
     }
 
-    // 2. Calculate Rank (Server Side for performance)
+    // 2. Calculate Rank
     const { count: rankCount, error: rankErr } = await supabase
       .from('users')
       .select('*', { count: 'exact', head: true })

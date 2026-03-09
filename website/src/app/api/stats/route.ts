@@ -29,10 +29,12 @@ export async function GET() {
 
     return NextResponse.json({
       stats: {
-        totalPlayers: users.length,
+        totalUsers: users.length,
         totalGamesPlayed: realGamesCount || totalGames,
         totalCoins: totalCoins,
         totalPoints: totalPoints,
+        totalQuizWins: totalWins,
+        totalCorrectAnswers: correct,
         globalAccuracy: totalGames > 0 ? ((correct / (totalGames * 5)) * 100).toFixed(1) : 0,
         activeServers: 1
       }

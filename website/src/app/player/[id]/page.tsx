@@ -11,8 +11,10 @@ export default function PlayerPage() {
   const { id } = useParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     if (id) {
       fetchPlayer(id as string)
         .then(setData)
@@ -167,7 +169,11 @@ export default function PlayerPage() {
                <div className="glass-card p-10 border-white/5 min-h-[400px]">
                   <h3 className="text-xl font-black mb-10 border-l-4 border-[#9d4edd] pl-4 uppercase tracking-widest">Activity Pulse (Last 10 Games)</h3>
                   <div className="w-full h-[300px]">
-                    {chartData.length > 1 ? (
+                    {!isMounted ? (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="w-8 h-8 border-2 border-[#6c63ff] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : chartData.length > 1 ? (
                       <ResponsiveContainer width="100%" height="100%">
                          <AreaChart data={chartData}>
                            <defs>
@@ -180,8 +186,8 @@ export default function PlayerPage() {
                            <XAxis dataKey="name" stroke="#9ca3af" fontSize={10} axisLine={false} tickLine={false} />
                            <YAxis stroke="#9ca3af" fontSize={10} axisLine={false} tickLine={false} />
                            <Tooltip 
-                              contentStyle={{ background: '#121826', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '12px', fontSize: '12px' }}
-                              itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                               contentStyle={{ background: '#121826', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '12px', fontSize: '12px' }}
+                               itemStyle={{ color: '#fff', fontWeight: 'bold' }}
                            />
                            <Area type="monotone" dataKey="score" stroke="#6c63ff" fillOpacity={1} fill="url(#colorScore)" strokeWidth={4} />
                          </AreaChart>
@@ -206,7 +212,7 @@ export default function PlayerPage() {
                             </div>
                             <div>
                                <p className="font-black tracking-tight text-lg group-hover:text-[#6c63ff] transition-colors">Quiz Performance Result</p>
-                               <p className="text-xs font-bold text-[#9ca3af] uppercase tracking-widest">{new Date(h.quiz_games.started_at).toLocaleString()}</p>
+                               <p className="text-xs font-bold text-[#9ca3af] uppercase tracking-widest">{new Date(h.quiz_games?.started_at || Date.now()).toLocaleString()}</p>
                             </div>
                          </div>
                          <div className="text-right">
