@@ -110,12 +110,10 @@ async function startLobby(interaction) {
     collector.on('collect', async (buttonInteraction) => {
         if (buttonInteraction.customId !== 'quiz_join') return;
 
-        if (game.players.has(buttonInteraction.user.id)) {
-            return buttonInteraction.reply({
-                ...buildError('Authentication already confirmed.').toJSON(),
-                flags: 64
-            });
-        }
+        // Acknowledge the interaction immediately to avoid timeouts (essential for high-traffic sessions)
+        await buttonInteraction.deferUpdate().catch(() => {});
+
+        if (game.players.has(buttonInteraction.user.id)) return;
 
         game.players.set(buttonInteraction.user.id, {
             points: 0,
@@ -124,10 +122,11 @@ async function startLobby(interaction) {
             avatar: buttonInteraction.user.displayAvatarURL()
         });
 
-        await buttonInteraction.reply({
+        // Use followUp for confirmation since the main interaction was deferred
+        await buttonInteraction.followUp({
             ...buildSuccess('Join Confirmed', `Session joined. Stand by for round start. ${getEmoji('ROCKET')}`).toJSON(),
             flags: 64
-        });
+        }).catch(() => {});
     });
 
     collector.on('end', async () => {
