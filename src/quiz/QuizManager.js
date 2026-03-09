@@ -30,7 +30,6 @@ async function fetchQuestion(catId, difficulty) {
     const data = await res.json();
     if (data.results && data.results.length > 0) {
       const q = data.results[0];
-      // Decode HTML entities (basic)
       const decode = (str) => str.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
       
       const question = decode(q.question);
@@ -71,11 +70,11 @@ async function startLobby(interaction) {
         .setAccentColor(0x6c63ff)
         .addSectionComponents(
             new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`🎮 **Hyperion Quiz: Recruitment Phase**\nClick Join to participate.\n\nThe quiz starts in 15 seconds.`))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${getEmoji('QUIZ')} **HYPERION ENGAGEMENT PROTOCOL**\nRecruitment Phase active. Click **Join** to authenticate.\n\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nStarting in 15 seconds...`))
         );
         
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('quiz_join').setLabel('Join').setStyle(ButtonStyle.Primary)
+        new ButtonBuilder().setCustomId('quiz_join').setLabel('Join Session').setEmoji('🚀').setStyle(ButtonStyle.Primary)
     );
     container.addActionRowComponents(row);
 
@@ -86,17 +85,17 @@ async function startLobby(interaction) {
     collector.on('collect', async i => {
         if (i.customId === 'quiz_join') {
             if (game.players.has(i.user.id)) {
-                return i.reply({ content: "You're already in!", ephemeral: true });
+                return i.reply({ content: "Authentication already confirmed.", ephemeral: true });
             }
             game.players.set(i.user.id, { points: 0, correct_answers: 0, username: i.user.username, avatar: i.user.displayAvatarURL() });
-            await i.reply({ content: "You joined the quiz! 🚀", ephemeral: true });
+            await i.reply({ content: "Session joined. Stand by for round start. 🚀", ephemeral: true });
         }
     });
 
     collector.on('end', async () => {
         if (game.players.size === 0) {
             activeGames.delete(interaction.channelId);
-            return interaction.followUp("Nobody joined the quiz. Session ended. 😢");
+            return interaction.followUp("No participants identified. Protocol aborted.");
         }
         await startNextRound(interaction, game);
     });
@@ -113,19 +112,34 @@ async function startNextRound(interaction, game) {
     const qData = await fetchQuestion(category.id, roundInfo.apiDiff);
 
     if (!qData) {
-        return interaction.followUp("Failed to fetch questions. Aborting quiz.");
+        activeGames.delete(game.channelId);
+        return interaction.followUp("Data stream interrupted. Session terminated.");
     }
+
+    const btnEmojis = [getEmoji('ONE'), getEmoji('TWO'), getEmoji('THREE'), getEmoji('FOUR')];
+    const choicesList = qData.choices.map((c, i) => `${btnEmojis[i]} **${c}**`).join('\n');
 
     const container = new ContainerBuilder()
         .setAccentColor(0x9d4edd)
         .addSectionComponents(
             new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`📊 **Round ${game.round} / 5**\nDifficulty: **${roundInfo.level}** (${roundInfo.points} pts)\nCategory: **${category.name}**\n\n**Question:**\n${qData.question}`))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`📊 **HYPERION ROUND ${game.round} / 5**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nComplexity: **${roundInfo.level}**\nValue: **${roundInfo.points}** ${getEmoji('COIN')}\nSector: **${category.name}**`))
+        )
+        .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+        .addSectionComponents(
+            new SectionBuilder()
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**QUESTION:**\n${qData.question}\n\n${choicesList}`))
         );
 
     const row = new ActionRowBuilder();
     qData.choices.forEach((choice, idx) => {
-        row.addComponents(new ButtonBuilder().setCustomId(`quiz_ans_${idx}`).setLabel(choice).setStyle(ButtonStyle.Secondary));
+        row.addComponents(
+          new ButtonBuilder()
+          .setCustomId(`quiz_ans_${idx}`)
+          .setLabel(`${idx + 1}`)
+          .setEmoji(btnEmojis[idx])
+          .setStyle(ButtonStyle.Secondary)
+        );
     });
     container.addActionRowComponents(row);
 
@@ -135,10 +149,10 @@ async function startNextRound(interaction, game) {
     const answered = new Set();
     collector.on('collect', async i => {
         if (!game.players.has(i.user.id)) {
-            return i.reply({ content: "You are not part of this quiz session!", ephemeral: true });
+            return i.reply({ content: "You are not authorized for this session.", ephemeral: true });
         }
         if (answered.has(i.user.id)) {
-            return i.reply({ content: "You already answered!", ephemeral: true });
+            return i.reply({ content: "Response already recorded.", ephemeral: true });
         }
 
         answered.add(i.user.id);
@@ -148,9 +162,9 @@ async function startNextRound(interaction, game) {
         if (choiceIdx === qData.correctIndex) {
             playerData.points += roundInfo.points;
             playerData.correct_answers++;
-            await i.reply({ content: `✅ Correct! (+${roundInfo.points} pts)`, ephemeral: true });
+            await i.reply({ content: `✅ **Positive.** Outcome accepted (+${roundInfo.points} Pts)`, ephemeral: true });
         } else {
-            await i.reply({ content: `❌ Wrong! The correct answer was: **${qData.choices[qData.correctIndex]}**`, ephemeral: true });
+            await i.reply({ content: `❌ **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`, ephemeral: true });
         }
     });
 
@@ -165,16 +179,12 @@ async function endQuiz(interaction, game) {
     const playersArr = Array.from(game.players.entries()).map(([discord_id, data]) => ({ discord_id, ...data }));
     playersArr.sort((a, b) => b.points - a.points);
 
-    // Save Game Record
     const { data: gameRecord, error: gameError } = await supabase.from('quiz_games').insert({
         guild_id: PRIMARY_GUILD_ID,
         ended_at: new Date(),
         difficulty_rounds: 5
     }).select().single();
 
-    if (gameError) console.error('[DEBUG] Game record error:', gameError);
-
-    // Update Users and Save Results
     for (let i = 0; i < playersArr.length; i++) {
         const pd = playersArr[i];
         const dbUser = await User.getOrCreate(pd.discord_id, pd.username, pd.avatar);
@@ -190,7 +200,6 @@ async function endQuiz(interaction, game) {
             
             await User.save(pd.discord_id, updates);
 
-            // Log results
             if (gameRecord) {
               await supabase.from('quiz_results').insert({
                   quiz_id: gameRecord.id,
@@ -198,8 +207,6 @@ async function endQuiz(interaction, game) {
                   score: pd.points,
                   position: i + 1
               });
-              
-              // Log economy
               if (pd.points > 0) {
                 await User.updateCoins(pd.discord_id, Math.floor(pd.points * 0.5), 'quiz_reward');
               }
@@ -208,32 +215,31 @@ async function endQuiz(interaction, game) {
     }
 
     let resultText = '';
-    const emojiMap = { 1: '🥇', 2: '🥈', 3: '🥉' };
+    const medals = { 1: getEmoji('FIRST'), 2: getEmoji('SECOND'), 3: getEmoji('THIRD') };
 
     playersArr.forEach((p, idx) => {
         const rank = idx + 1;
         const reward = Math.floor(p.points * 0.5);
-        resultText += `${emojiMap[rank] || rank + ')'} **<@${p.discord_id}>** — ${p.points} Pts (+${reward} 🪙)\n`;
+        resultText += `${medals[rank] || rank + '.'} **<@${p.discord_id}>** — ${p.points} Pts (+${reward} ${getEmoji('COIN')})\n`;
     });
 
     const container = new ContainerBuilder()
         .setAccentColor(0x6c63ff)
         .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(`🏁 **Hyperion Quiz: Tournament Results**\nThe game has concluded.`))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(`${getEmoji('TROPHY')} **HYPERION TOURNAMENT FINALIZED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"))
         )
-        .addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(true))
         .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(resultText || 'No one participated.'))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(resultText || 'Insufficient engagement.'))
         );
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('btn_play_again').setLabel('Play Again').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId('btn_view_leaderboard').setLabel('Leaderboard').setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId('btn_view_profile').setLabel('My Profile').setStyle(ButtonStyle.Secondary)
+        new ButtonBuilder().setCustomId('btn_play_again').setLabel('Re-Engage').setEmoji('🔄').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('btn_view_leaderboard').setLabel('Global Ranks').setEmoji(getEmoji('TROPHY')).setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('btn_view_profile').setLabel('Access Profile').setEmoji('👤').setStyle(ButtonStyle.Secondary)
     );
     container.addActionRowComponents(row);
 
     await interaction.channel.send(container.toJSON());
 }
 
-module.exports = { startLobby };
+module.exports = { startLobby, getActiveGamesCount: () => activeGames.size };

@@ -10,6 +10,10 @@ const EMOJI_NAMES = {
     FIRST: 'first',
     SECOND: 'second',
     THIRD: 'third',
+    ONE: 'one',
+    TWO: 'two',
+    THREE: 'three',
+    FOUR: 'four',
 };
 
 // Fallback unicode emojis
@@ -21,6 +25,10 @@ const FALLBACKS = {
     FIRST: '🥇',
     SECOND: '🥈',
     THIRD: '🥉',
+    ONE: '1️⃣',
+    TWO: '2️⃣',
+    THREE: '3️⃣',
+    FOUR: '4️⃣',
 };
 
 async function loadEmojis(client) {

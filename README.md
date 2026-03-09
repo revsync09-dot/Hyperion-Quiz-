@@ -1,50 +1,54 @@
-# Quiz Meister - Competitive Discord Bot & Web Platform
+# Hyperion Ecosystem: Bot & Website
 
-A high-end, professional Discord quiz bot built with **Discord Components V2** and a matching **Next.js & React** gaming dashboard.
+Welcome to the **Hyperion** core. A high-end, professional Discord quiz and economy system exclusively locked to the Hyperion Server Guild.
 
-## 🚀 Quick Start
+## 🛠️ Key Components
 
-1.  **Configure Environment**: Open the `.env` file in the root directory and replace the placeholders with your actual credentials:
-    ```env
-    DISCORD_TOKEN=your_bot_token
-    CLIENT_ID=your_client_id
-    SUPABASE_URL=your_supabase_project_url
-    SUPABASE_KEY=your_supabase_service_role_key
-    ```
-2.  **Install Dependencies**:
-    ```bash
-    npm install
-    cd website && npm install && cd ..
-    ```
-3.  **Deploy Commands**:
-    ```bash
-    npm run deploy-commands
-    ```
-4.  **Run Development Mode**:
-    ```bash
-    npm run dev
-    ```
-    _This starts the Bot (Port 3001) and the Website (Port 3000) simultaneously._
+### 1. The Discord Bot (`src/`)
 
-## 🛠️ Features
+- **Components V2 Engine**: A custom DSL (`uiBuilders.js`) that produces premium-quality, terminal-inspired Discord UIs.
+- **Server Lock**: Strictly enforces interactions only within Guild ID: `1422969507734884374`.
+- **Engagement Protocol (Quiz)**: 5 rounds of escalating difficulty (Easy → Extreme) with custom choice emojis (1-4).
+- **Global Heartbeat**: Reports live bot status and active games to Supabase every 60 seconds.
 
-- **Discord Bot**:
-  - Dynamic 5-round Quiz system with progressive difficulty.
-  - Full economy: earn coins, level up, and track stats.
-  - Modern V2 UI for all interactions.
-  - Emoji manager fetching directly from your guilds.
-- **Web Dashboard**:
-  - **Live Statistics**: Real-time charts of player activity and global economy.
-  - **Global Leaderboards**: Rank players by points, coins, or wins.
-  - **Player Profiles**: Detailed stats, charts, and achievements for every user.
-  - **Responsive Design**: Fully optimized for desktop and mobile.
+### 2. The Website Terminal (`website/`)
 
-## 🏗️ Technology Stack
+- **Next.js 16 (Turbopack)**: Blazing fast performance for live statistics.
+- **Live Status Badge**: Visual indicator in the Navbar showing if the bot is "System Live" or under "Maintenance".
+- **Dynamic Leaderboards**: Real-time rankings pulled directly from the Hyperion Database.
+- **Player Profiles**: Detailed activity and accuracy charts for every authenticated player.
 
-- **Bot**: Discord.js v14+, Express, Supabase.
-- **Website**: Next.js 15, Tailwind v4, Framer Motion, Recharts.
-- **Database**: Supabase (PostgreSQL).
+## ⚙️ Configuration (.env)
+
+Ensure these variables are set in your root `.env`:
+
+```env
+DISCORD_TOKEN=your_token
+CLIENT_ID=your_client_id
+PRIMARY_GUILD_ID=1422969507734884374
+
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+
+# Custom Emojis (Provide Guild IDs where emojis are located)
+EMOJI_GUILD_IDS=guild_id_1,guild_id_2
+
+# Manual Emoji Overrides (Optional)
+EMOJI_ONE=1️⃣
+EMOJI_TWO=2️⃣
+EMOJI_THREE=3️⃣
+EMOJI_FOUR=4️⃣
+EMOJI_COIN=🪙
+EMOJI_TROPHY=🏆
+EMOJI_QUIZ=❓
+```
+
+## 🚀 Deployment
+
+1. **Database**: Run the `DB_MIGRATION.sql` script in your Supabase SQL Editor.
+2. **Website**: Deploy the `website/` folder to **Vercel**. Connect your GitHub repository.
+3. **Bot**: Run the bot via `npm run dev` or host it on a VPS (PM2 recommended).
 
 ---
 
-Made with ❤️ by Hyperion
+_Developed for the Hyperion Server Guild._ 🛡️✨

@@ -7,6 +7,7 @@ const api = require('./api/server');
 const { renderLeaderboard } = require('./commands/leaderboard');
 const QuizManager = require('./quiz/QuizManager');
 const { loadEmojis } = require('./utils/emojiManager');
+const { startHeartbeat } = require('./utils/statusManager');
 
 const PRIMARY_GUILD_ID = '1422969507734884374';
 
@@ -41,6 +42,9 @@ client.once(Events.ClientReady, async (c) => {
     } catch (err) {
         console.error('[CORE] Failed to load emojis:', err);
     }
+
+    // Start Bot Heartbeat for Website Status
+    startHeartbeat(() => QuizManager.getActiveGamesCount());
     
     // Web API is moving to Next.js for Vercel support
     // api.startServer();

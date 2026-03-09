@@ -53,7 +53,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Hyperion Quiz. All rights reserved.
           </p>
           <p className="text-xs text-[#9ca3af] flex items-center gap-1">
-            Made with <Heart size={12} className="text-red-400 fill-red-400" /> by Hyperion
+            Made with  <Heart size={12} className="text-red-400 fill-red-400" /> by Red_thz for you
           </p>
         </div>
       </div>

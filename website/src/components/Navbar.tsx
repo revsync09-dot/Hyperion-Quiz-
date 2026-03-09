@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Trophy, Home, BarChart3 } from "lucide-react";
+import { Menu, X, Trophy, Home, BarChart3, Radio } from "lucide-react";
+import { fetchBotStatus } from "@/lib/api";
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -12,20 +13,37 @@ const navLinks = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState<any>({ status: 'connecting', active_games: 0 });
+
+  useEffect(() => {
+    const update = () => fetchBotStatus().then(setStatus);
+    update();
+    const interval = setInterval(update, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0b0f19]/80 border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#9d4edd] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#6c63ff]/30">
-              H
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#9d4edd] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#6c63ff]/30">
+                H
+              </div>
+              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-muted bg-clip-text text-transparent group-hover:from-[#6c63ff] group-hover:to-[#9d4edd] transition-all duration-300">
+                Hyperion Quiz
+              </span>
+            </Link>
+
+            {/* Live Status Badge */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+              <div className={`w-2 h-2 rounded-full animate-pulse ${status.status === 'online' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#9ca3af]">
+                {status.status === 'online' ? 'System Live' : 'Maintenance'}
+              </span>
             </div>
-            <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-muted bg-clip-text text-transparent group-hover:from-[#6c63ff] group-hover:to-[#9d4edd] transition-all duration-300">
-              Hyperion Quiz
-            </span>
-          </Link>
+          </div>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">

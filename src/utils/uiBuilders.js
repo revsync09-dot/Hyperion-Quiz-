@@ -41,6 +41,16 @@ class ContainerBuilder {
         return this;
     }
 
+    setTitle(title) {
+        this.embed.setTitle(title);
+        return this;
+    }
+
+    setThumbnail(url) {
+        if (url) this.embed.setThumbnail(url);
+        return this;
+    }
+
     addSectionComponents(...sections) {
         this.sections.push(...sections.map(s => s.toJSON()));
         return this;
