@@ -4,6 +4,7 @@ const {
     SectionBuilder,
     TextDisplayBuilder,
     SeparatorBuilder,
+    buildPanel,
     buildError,
     buildSuccess
 } = require('../utils/uiBuilders');
@@ -83,17 +84,16 @@ async function startLobby(interaction) {
 
     activeGames.set(interaction.channelId, game);
 
-    const lobbyText =
-        `${getEmoji('QUIZ')} **HYPERION ENGAGEMENT PROTOCOL**\n` +
-        `Recruitment Phase active. Click **Join** to authenticate.\n\n` +
-        `-------------------------\n` +
-        `Starting in 15 seconds...`;
-
-    const container = new ContainerBuilder()
-        .setAccentColor(0x6c63ff)
-        .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(lobbyText))
-        );
+    const container = buildPanel({
+        icon: getEmoji('QUIZ'),
+        title: 'HYPERION ENGAGEMENT PROTOCOL',
+        accentColor: 0x6c63ff,
+        lines: [
+            'Recruitment Phase active. Click **Join** to authenticate.',
+            '',
+            'Starting in **15 seconds**.'
+        ]
+    });
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -133,6 +133,7 @@ async function startLobby(interaction) {
     collector.on('end', async () => {
         if (game.players.size === 0) {
             activeGames.delete(interaction.channelId);
+            if (interaction.isAutoDeploy) return; // Silent abort if automated
             return interaction.followUp(buildError('No participants identified. Protocol aborted.').toJSON()).catch(console.error);
         }
 
@@ -314,18 +315,12 @@ async function endQuiz(interaction, game) {
         })
         .join('\n');
 
-    const summaryText = `${getEmoji('TROPHY')} **HYPERION TOURNAMENT FINALIZED**\n-------------------------`;
-
-    const container = new ContainerBuilder()
-        .setAccentColor(0x6c63ff)
-        .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(summaryText))
-        )
-        .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(resultText || 'Insufficient engagement.')
-            )
-        );
+    const container = buildPanel({
+        icon: getEmoji('TROPHY'),
+        title: 'HYPERION TOURNAMENT FINALIZED',
+        accentColor: 0x6c63ff,
+        lines: [resultText || 'Insufficient engagement.']
+    });
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()

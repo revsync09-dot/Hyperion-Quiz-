@@ -58,7 +58,6 @@ async function loadEmojis(client) {
 }
 
 function getEmoji(key) {
-    // 1. Check .env overrides FIRST (High Priority)
     const envKey = `EMOJI_${key}`;
     const envVal = process.env[envKey];
     
@@ -70,6 +69,12 @@ function getEmoji(key) {
             const fallbackName = EMOJI_CONFIG[key]?.name || 'emoji';
             return `<:${fallbackName}:${envVal}>`;
         }
+
+        const normalizedName = envVal.replace(/^:|:$/g, '').toLowerCase();
+        if (emojiCache.has(normalizedName)) {
+            return emojiCache.get(normalizedName);
+        }
+
         return envVal;
     }
 
@@ -96,7 +101,19 @@ function getComponentEmoji(key) {
 
             return { id: envVal, name: EMOJI_CONFIG[key]?.name || 'emoji' };
         }
-        // If they provided Unicode fallback in .env, just return string
+        const normalizedName = envVal.replace(/^:|:$/g, '').toLowerCase();
+        if (emojiCache.has(normalizedName)) {
+            const cached = emojiCache.get(normalizedName);
+            const match = cached.match(/<(a?):([^:]+):(\d+)>/);
+            if (match) {
+                return {
+                    id: match[3],
+                    name: match[2],
+                    animated: Boolean(match[1])
+                };
+            }
+        }
+
         return envVal;
     }
 
@@ -118,7 +135,6 @@ function getComponentEmoji(key) {
 
 function getCustomEmoji(name) {
     const lowerName = name?.toLowerCase();
-    // Check .env for dynamic keys like EMOJI_MYCUSTOM
     if (process.env[`EMOJI_${name?.toUpperCase()}`]) {
         return process.env[`EMOJI_${name?.toUpperCase()}`];
     }

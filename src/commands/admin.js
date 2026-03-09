@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, buildError } = require('../utils/uiBuilders');
+const { buildPanel, buildError } = require('../utils/uiBuilders');
 const { getEmoji } = require('../utils/emojiManager');
 const { createSystemUpdate } = require('../utils/systemUpdates');
 const supabase = require('../database/supabase');
@@ -15,12 +15,8 @@ module.exports = {
             sub
                 .setName('update')
                 .setDescription('Broadcast a system update to the Website Quiz Meister')
-                .addStringOption((opt) =>
-                    opt.setName('version').setDescription('Target Version (e.g. v2.6.0)').setRequired(true)
-                )
-                .addStringOption((opt) =>
-                    opt.setName('title').setDescription('Protocol Title').setRequired(true)
-                )
+                .addStringOption((opt) => opt.setName('version').setDescription('Target Version (e.g. v2.6.0)').setRequired(true))
+                .addStringOption((opt) => opt.setName('title').setDescription('Protocol Title').setRequired(true))
                 .addStringOption((opt) =>
                     opt
                         .setName('category')
@@ -32,26 +28,16 @@ module.exports = {
                             { name: 'General Protocol', value: 'GENERAL' }
                         )
                 )
-                .addStringOption((opt) =>
-                    opt.setName('content').setDescription('Detailed log data').setRequired(true)
-                )
-                .addBooleanOption((opt) =>
-                    opt.setName('major').setDescription('Critical system shift?').setRequired(false)
-                )
+                .addStringOption((opt) => opt.setName('content').setDescription('Detailed log data').setRequired(true))
+                .addBooleanOption((opt) => opt.setName('major').setDescription('Critical system shift?').setRequired(false))
         )
         .addSubcommand((sub) =>
             sub
                 .setName('autoquiz')
                 .setDescription('Configure Automated Quiz Deployment (AQD)')
-                .addChannelOption((opt) =>
-                    opt.setName('channel').setDescription('Target Channel for auto quizzes').setRequired(true)
-                )
-                .addIntegerOption((opt) =>
-                    opt.setName('interval').setDescription('Interval in seconds').setRequired(true)
-                )
-                .addBooleanOption((opt) =>
-                    opt.setName('enabled').setDescription('Enable or disable auto quizzes').setRequired(true)
-                )
+                .addChannelOption((opt) => opt.setName('channel').setDescription('Target Channel for auto quizzes').setRequired(true))
+                .addIntegerOption((opt) => opt.setName('interval').setDescription('Interval in seconds').setRequired(true))
+                .addBooleanOption((opt) => opt.setName('enabled').setDescription('Enable or disable auto quizzes').setRequired(true))
         ),
 
     async execute(interaction) {
@@ -64,7 +50,7 @@ module.exports = {
             const title = interaction.options.getString('title');
             const category = interaction.options.getString('category');
             const content = interaction.options.getString('content');
-            const is_major = interaction.options.getBoolean('major') || false;
+            const isMajor = interaction.options.getBoolean('major') || false;
 
             try {
                 const result = await createSystemUpdate({
@@ -72,29 +58,25 @@ module.exports = {
                     title,
                     category,
                     content,
-                    is_major
+                    is_major: isMajor
                 });
 
-                const statusTitle = result.created ? 'PROTOCOL BROADCAST SUCCESSFUL' : 'DUPLICATE UPDATE BLOCKED';
-                const statusBody = result.created
-                    ? 'The Quiz Meister has been updated with this system log.'
-                    : 'An identical recent update already exists, so no second website entry was created.';
+                const panel = buildPanel({
+                    icon: getEmoji('SUCCESS'),
+                    title: result.created ? 'PROTOCOL BROADCAST SUCCESSFUL' : 'DUPLICATE UPDATE BLOCKED',
+                    accentColor: 0x22c55e,
+                    lines: [
+                        `Sector: **${category}**`,
+                        `Version: **${version}**`,
+                        `Title: **${title}**`,
+                        '',
+                        result.created
+                            ? 'The Quiz Meister has been updated with this system log.'
+                            : 'An identical recent update already exists, so no second website entry was created.'
+                    ]
+                });
 
-                const text =
-                    `${getEmoji('SUCCESS')} **${statusTitle}**\n` +
-                    `-------------------------\n` +
-                    `Sector: **${category}**\n` +
-                    `Version: **${version}**\n` +
-                    `Title: **${title}**\n\n` +
-                    statusBody;
-
-                const container = new ContainerBuilder()
-                    .setAccentColor(0x22c55e)
-                    .addSectionComponents(
-                        new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
-                    );
-
-                await interaction.reply({ ...container.toJSON(), flags: 64 });
+                await interaction.reply({ ...panel.toJSON(), flags: 64 });
             } catch (error) {
                 console.error('[ADMIN] Update broadcast failed:', error);
                 await interaction.reply({
@@ -121,20 +103,18 @@ module.exports = {
 
                 if (error) throw error;
 
-                const text =
-                    `${getEmoji('SUCCESS')} **AUTOMATED QUIZ DEPLOYMENT CONFIGURED**\n` +
-                    `-------------------------\n` +
-                    `Target Channel: <#${channel.id}>\n` +
-                    `Interval: **${interval} seconds**\n` +
-                    `Status: **${enabled ? 'ACTIVE' : 'DISABLED'}**`;
+                const panel = buildPanel({
+                    icon: getEmoji('SUCCESS'),
+                    title: 'AUTOMATED QUIZ DEPLOYMENT CONFIGURED',
+                    accentColor: 0x6c63ff,
+                    lines: [
+                        `Target Channel: <#${channel.id}>`,
+                        `Interval: **${interval} seconds**`,
+                        `Status: **${enabled ? 'ACTIVE' : 'DISABLED'}**`
+                    ]
+                });
 
-                const container = new ContainerBuilder()
-                    .setAccentColor(0x6c63ff)
-                    .addSectionComponents(
-                        new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
-                    );
-
-                await interaction.reply({ ...container.toJSON(), flags: 64 });
+                await interaction.reply({ ...panel.toJSON(), flags: 64 });
             } catch (error) {
                 console.error('[ADMIN] Autoquiz config failed:', error);
                 await interaction.reply({
