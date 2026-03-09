@@ -93,12 +93,34 @@ CREATE TABLE IF NOT EXISTS system_updates (
 
 -- Policies for system_updates
 ALTER TABLE system_updates ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all read access to system_updates" ON system_updates FOR SELECT USING (true);
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE policyname = 'Allow all read access to system_updates'
+          AND tablename = 'system_updates'
+    ) THEN
+        CREATE POLICY "Allow all read access to system_updates" ON system_updates FOR SELECT USING (true);
+    END IF;
+END
+$$;
 
 -- Insert Initial Update
 INSERT INTO system_updates (version, title, category, content, is_major)
-VALUES 
-('v2.5.0', 'Hyperion Engagement Protocol: Launch', 'GENERAL', 'Initial v2.5.0 release of the Hyperion bot and website ecosystem. Features full Supabase integration, live status tracking, and a premium terminal-inspired UI.', true);
+SELECT
+    'v2.5.0',
+    'Hyperion Engagement Protocol: Launch',
+    'GENERAL',
+    'Initial v2.5.0 release of the Hyperion bot and website ecosystem. Features full Supabase integration, live status tracking, and a premium terminal-inspired UI.',
+    true
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM system_updates
+    WHERE version = 'v2.5.0'
+      AND title = 'Hyperion Engagement Protocol: Launch'
+);
 -- 5. Guild Configuration
 CREATE TABLE IF NOT EXISTS guild_config (
     guild_id TEXT PRIMARY KEY,
@@ -111,5 +133,25 @@ CREATE TABLE IF NOT EXISTS guild_config (
 
 -- Policies for guild_config
 ALTER TABLE guild_config ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow read access to guild_config" ON guild_config FOR SELECT USING (true);
-CREATE POLICY "Allow all to Service Role for guild_config" ON guild_config FOR ALL USING (true);
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE policyname = 'Allow read access to guild_config'
+          AND tablename = 'guild_config'
+    ) THEN
+        CREATE POLICY "Allow read access to guild_config" ON guild_config FOR SELECT USING (true);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE policyname = 'Allow all to Service Role for guild_config'
+          AND tablename = 'guild_config'
+    ) THEN
+        CREATE POLICY "Allow all to Service Role for guild_config" ON guild_config FOR ALL USING (true);
+    END IF;
+END
+$$;
