@@ -80,33 +80,33 @@ export default function StatsPage() {
   const hasCoinsData = stats.coinsEarnedDaily.some((entry) => (entry.coins || 0) > 0);
 
   return (
-    <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 bg-[#0b0f19] min-h-screen text-white">
+    <div className="mx-auto min-h-screen max-w-7xl bg-[#0b0f19] px-4 pt-24 pb-16 text-white sm:px-6">
       <motion.div initial="hidden" animate="visible" variants={containerVariants}>
-        <motion.div variants={itemVariants} className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-black mb-3 italic uppercase tracking-tighter">
+        <motion.div variants={itemVariants} className="mb-10 text-center sm:mb-12">
+          <h1 className="mb-3 text-3xl font-black uppercase italic tracking-tighter sm:text-4xl md:text-5xl">
             Global{" "}
             <span className="bg-gradient-to-r from-[#6c63ff] to-[#9d4edd] bg-clip-text text-transparent">
               Statistics
             </span>
           </h1>
-          <p className="text-[#9ca3af] font-bold uppercase tracking-widest text-sm">Real system telemetry only</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9ca3af] sm:text-sm">Real system telemetry only</p>
         </motion.div>
 
-        <motion.div variants={containerVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+        <motion.div variants={containerVariants} className="mb-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
           {overviewCards.map((card) => (
-            <motion.div key={card.label} variants={itemVariants} className="glass-card p-5 text-center">
-              <div className={`w-10 h-10 mx-auto mb-3 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center shadow-lg`}>
+            <motion.div key={card.label} variants={itemVariants} className="glass-card p-4 text-center sm:p-5">
+              <div className={`mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.color} shadow-lg`}>
                 <card.icon size={18} className="text-white" />
               </div>
-              <div className="text-xl font-black tracking-tighter">{(card.value || 0).toLocaleString()}</div>
+              <div className="text-lg font-black tracking-tighter sm:text-xl">{(card.value || 0).toLocaleString()}</div>
               <div className="text-[10px] text-[#9ca3af] font-black uppercase tracking-widest mt-1">{card.label}</div>
             </motion.div>
           ))}
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-[#6c63ff] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Games Last 14 Days</h3>
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+          <motion.div variants={itemVariants} className="glass-card min-h-[320px] p-5 sm:p-8 lg:p-10">
+            <h3 className="mb-6 border-l-4 border-[#6c63ff] pl-4 text-xs font-black uppercase tracking-[0.2em] text-[#9ca3af] sm:mb-8 sm:text-sm">Games Last 14 Days</h3>
             <div className="h-[260px] w-full">
               {!isMounted ? (
                 <div className="flex items-center justify-center h-full">
@@ -128,8 +128,8 @@ export default function StatsPage() {
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-[#22c55e] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Active Players Last 14 Days</h3>
+          <motion.div variants={itemVariants} className="glass-card min-h-[320px] p-5 sm:p-8 lg:p-10">
+            <h3 className="mb-6 border-l-4 border-[#22c55e] pl-4 text-xs font-black uppercase tracking-[0.2em] text-[#9ca3af] sm:mb-8 sm:text-sm">Active Players Last 14 Days</h3>
             <div className="h-[260px] w-full">
               {!isMounted ? (
                 <div className="flex items-center justify-center h-full">
@@ -157,8 +157,8 @@ export default function StatsPage() {
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-amber-400 pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Coins Logged Last 14 Days</h3>
+          <motion.div variants={itemVariants} className="glass-card min-h-[320px] p-5 sm:p-8 lg:p-10">
+            <h3 className="mb-6 border-l-4 border-amber-400 pl-4 text-xs font-black uppercase tracking-[0.2em] text-[#9ca3af] sm:mb-8 sm:text-sm">Coins Logged Last 14 Days</h3>
             <div className="h-[260px] w-full">
               {!isMounted ? (
                 <div className="flex items-center justify-center h-full">
@@ -180,12 +180,12 @@ export default function StatsPage() {
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-[#9d4edd] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Telemetry Scope</h3>
+          <motion.div variants={itemVariants} className="glass-card min-h-[320px] p-5 sm:p-8 lg:p-10">
+            <h3 className="mb-6 border-l-4 border-[#9d4edd] pl-4 text-xs font-black uppercase tracking-[0.2em] text-[#9ca3af] sm:mb-8 sm:text-sm">Telemetry Scope</h3>
             <div className="flex h-[260px] items-center justify-center">
               <div className="max-w-sm text-center">
-                <p className="text-2xl font-black tracking-tight mb-4">{stats.globalAccuracy}% Accuracy</p>
-                <p className="text-sm text-[#9ca3af] leading-7">
+                <p className="mb-4 text-xl font-black tracking-tight sm:text-2xl">{stats.globalAccuracy}% Accuracy</p>
+                <p className="text-sm leading-7 text-[#9ca3af]">
                   This dashboard now shows only persisted telemetry. Topic distribution is not displayed because the current quiz schema does not store per-category history yet.
                 </p>
               </div>

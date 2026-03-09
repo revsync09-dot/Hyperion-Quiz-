@@ -63,15 +63,15 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0b0f19]/80 border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 group">
+        <div className="flex h-16 items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-6">
+            <Link href="/" className="group flex min-w-0 items-center gap-3">
               <img 
                 src="/logo.png" 
                 alt="Quiz Meister Logo" 
                 className="w-10 h-10 rounded-xl shadow-lg shadow-[#6c63ff]/30 object-cover"
               />
-              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-muted bg-clip-text text-transparent group-hover:from-[#6c63ff] group-hover:to-[#9d4edd] transition-all duration-300">
+              <span className="truncate text-base font-bold tracking-tight bg-gradient-to-r from-white to-muted bg-clip-text text-transparent transition-all duration-300 group-hover:from-[#6c63ff] group-hover:to-[#9d4edd] sm:text-lg">
                 Quiz Meister
               </span>
             </Link>
@@ -144,7 +144,7 @@ export default function Navbar() {
           {/* Mobile Toggle */}
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden p-2 rounded-lg text-[#9ca3af] hover:text-white hover:bg-white/5"
+            className="md:hidden shrink-0 rounded-lg p-2 text-[#9ca3af] hover:bg-white/5 hover:text-white"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -160,7 +160,36 @@ export default function Navbar() {
                 exit={{ opacity: 0, height: 0 }}
                 className="md:hidden border-t border-white/5 bg-[#0b0f19]/95 backdrop-blur-xl"
             >
-                <div className="px-4 py-4 space-y-1">
+                <div className="space-y-1 px-4 py-4">
+                    <div className="mb-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                        <div className="mb-2 flex items-center gap-2">
+                            <div className={`h-2.5 w-2.5 rounded-full ${status.status === 'online' ? 'bg-emerald-400' : 'bg-red-500'}`} />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#9ca3af]">
+                                {status.status === 'online' ? 'System Live' : 'Maintenance'}
+                            </span>
+                        </div>
+                        {user ? (
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'H'}`}
+                              alt="User"
+                              className="h-10 w-10 rounded-xl object-cover"
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-white">
+                                {user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
+                              </p>
+                              <p className="truncate text-[10px] font-bold uppercase tracking-widest text-[#9ca3af]">
+                                Logged In
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs leading-6 text-[#9ca3af]">
+                            Navigate, review stats, and log in without the menu collapsing into the page.
+                          </p>
+                        )}
+                    </div>
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
