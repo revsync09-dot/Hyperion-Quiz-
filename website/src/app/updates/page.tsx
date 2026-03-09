@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Bot, Globe, Shield, Activity, Terminal } from "lucide-react";
 import { fetchUpdates } from "@/lib/api";
+import { siteConfig } from "@/lib/siteConfig";
 
 const CategoryIcon = ({ cat }: { cat: string }) => {
   if (cat === "BOT") return <Bot size={18} className="text-[#6c63ff]" />;
@@ -35,7 +36,7 @@ export default function UpdatesPage() {
           <div className="mb-14 text-center sm:mb-20">
             <div className="mb-6 inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#9ca3af] sm:text-xs sm:tracking-[0.3em]">
               <Activity size={14} className="animate-pulse text-[#6c63ff]" />
-              Quiz Meister System Log
+              {siteConfig.botName} System Log
             </div>
             <h1 className="mb-6 text-4xl font-black uppercase italic tracking-tighter sm:text-5xl md:text-7xl">
               Update{" "}

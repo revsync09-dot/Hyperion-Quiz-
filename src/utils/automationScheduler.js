@@ -55,7 +55,13 @@ async function checkAutomatedQuizzes(client) {
             const channel = guild.channels.cache.get(config.quiz_channel_id);
             if (!channel) continue;
 
+            // PRE-FLIGHT CHECK: Avoid overlaps if a game is already active in memory
+            if (QuizManager.isGameActive && QuizManager.isGameActive(channel.id)) {
+                continue;
+            }
+
             runningGuilds.add(config.guild_id);
+            console.log(`[AUTO-QUIZ] Temporal window open for ${guild.name}. Checking slot availability...`);
 
             try {
                 const claimed = await claimAutoQuizSlot(config);

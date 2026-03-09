@@ -102,5 +102,11 @@
   {"category":"Music","difficulty":"Extreme","question":"Who won 2020 Grammy Album of the Year?","choices":["Billie Eilish","Taylor Swift","Bruno Mars","Adele"],"correctIndex":0},
   {"category":"Music","difficulty":"Extreme","question":"What is a composition for nine instruments called?","choices":["Octet","Nonet","Septet","Decet"],"correctIndex":1},
   {"category":"Music","difficulty":"Extreme","question":"What was Beethoven's last symphony number?","choices":["7","8","9","10"],"correctIndex":2},
-  {"category":"Music","difficulty":"Extreme","question":"What key is a standard guitar's lowest string?","choices":["A","D","E","G"],"correctIndex":2}
+  {"category":"Music","difficulty":"Extreme","question":"What key is a standard guitar's lowest string?","choices":["A","D","E","G"],"correctIndex":2},
+  {"category":"Gaming","difficulty":"Hard","question":"What is the name of the protagonist in the first BioShock?","choices":["Jack","Andrew","Booker","Frank"],"correctIndex":0},
+  {"category":"Gaming","difficulty":"Medium","question":"What is the name of the futuristic city in Cyberpunk 2077?","choices":["Night City","Neon City","Sky City","Metro City"],"correctIndex":0},
+  {"category":"Anime","difficulty":"Medium","question":"What is the name of the technique where Goku powers up beyond his base form?","choices":["Kaioken","Super Saiyan","Gear 4","Ultra Instinct"],"correctIndex":0},
+  {"category":"General Knowledge","difficulty":"Medium","question":"What is the name of the longest river in the world?","choices":["Nile","Amazon","Yangtze","Mississippi"],"correctIndex":0},
+  {"category":"Movies & Series","difficulty":"Medium","question":"What is the name of the kingdom in Tangled?","choices":["Corona","Arendelle","DunBroch","Kupoli"],"correctIndex":0},
+  {"category":"Music","difficulty":"Medium","question":"Which artist is known as the 'Material Girl'?","choices":["Madonna","Cher","Whitney Houston","Lady Gaga"],"correctIndex":0}
 ]

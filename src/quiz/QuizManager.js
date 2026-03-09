@@ -49,10 +49,13 @@ async function touchAutoQuizCooldown(target) {
         return;
     }
 
-    await supabase
+    console.log(`[QUIZ] Finalizing cooldown for guild: ${guildId}`);
+    const { error } = await supabase
         .from('guild_config')
         .update({ last_auto_quiz: new Date().toISOString() })
         .eq('guild_id', guildId);
+
+    if (error) console.error('[QUIZ] Cooldown update failed:', error.message);
 }
 
 function getChoiceEmojiByIndex(index) {

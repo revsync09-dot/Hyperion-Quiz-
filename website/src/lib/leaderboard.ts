@@ -1,6 +1,7 @@
 import { supabaseServer } from '@/lib/supabase-server';
+import { siteConfig } from '@/lib/siteConfig';
 
-const PRIMARY_GUILD_ID = '1422969507734884374';
+const PRIMARY_GUILD_ID = siteConfig.guildId;
 
 type UserRow = {
   id: string;

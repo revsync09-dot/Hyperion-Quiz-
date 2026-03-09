@@ -1,27 +1,26 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
+import { siteConfig } from "@/lib/siteConfig";
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/5 bg-[#0b0f19]/90 backdrop-blur-xl mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <img 
-                src="/logo.png" 
-                alt="Quiz Meister Logo" 
+              <img
+                src="/logo.png"
+                alt={`${siteConfig.botName} Logo`}
                 className="w-10 h-10 rounded-xl object-cover"
               />
-              <span className="text-lg font-bold text-white">Quiz Meister</span>
+              <span className="text-lg font-bold text-white">{siteConfig.botName}</span>
             </div>
             <p className="text-sm text-[#9ca3af] leading-relaxed">
-              You want do know your Stats of the Quiz bot so you came to the right place
+              Track your {siteConfig.guildName} quiz stats, rankings, and live system activity in one place.
             </p>
           </div>
 
-          {/* Links */}
           <div>
             <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Navigation</h4>
             <ul className="space-y-2">
@@ -53,10 +52,10 @@ export default function Footer() {
 
         <div className="border-t border-white/5 mt-10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-[#9ca3af]">
-            © {new Date().getFullYear()} Quiz Meister. All rights reserved.
+            © {new Date().getFullYear()} {siteConfig.botName}. All rights reserved.
           </p>
           <p className="text-xs text-[#9ca3af] flex items-center gap-1">
-            Made with  <Heart size={12} className="text-red-400 fill-red-400" /> by Red_thz for you
+            Made with <Heart size={12} className="text-red-400 fill-red-400" /> by Red_thz for you
           </p>
         </div>
       </div>
