@@ -14,23 +14,26 @@ module.exports = {
             return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), flags: 64 });
         }
 
-        let dbUser = await User.getOrCreate(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL());
+        await interaction.deferReply({ flags: 64 });
+
+        const target = interaction.options.getUser('user') || interaction.user;
+        let user = await User.getOrCreate(target.id, target.username, target.displayAvatarURL());
         
-        if (!dbUser) {
-            return interaction.reply({ ...buildError("Player not identified in Hyperion database.").toJSON(), flags: 64 });
+        if (!user) {
+            return interaction.editReply({ ...buildError("Player not identified in Hyperion database.").toJSON() });
         }
 
         const coinEmoji = getEmoji('COIN');
         const container = new ContainerBuilder()
             .setAccentColor(0xF1C40F)
-            .setThumbnail(interaction.user.displayAvatarURL())
+            .setThumbnail(target.displayAvatarURL())
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`💰 **HYPERION CAPITAL DASHBOARD**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nAuthentication: **Confirmed**\nAccount Holder: **${interaction.user.username.toUpperCase()}**\n\nBalance: **${(dbUser.coins || 0).toLocaleString()}** ${coinEmoji}`)
+                new TextDisplayBuilder().setContent(`💰 **HYPERION CAPITAL DASHBOARD**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nAuthentication: **Confirmed**\nAccount Holder: **${target.username.toUpperCase()}**\n\nBalance: **${(user.coins || 0).toLocaleString()}** ${coinEmoji}`)
             ))
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(`\n*Visit the Web Terminal for detailed transaction logs.*`)
             ));
 
-        await interaction.reply(container.toJSON());
+        await interaction.editReply(container.toJSON());
     }
 };

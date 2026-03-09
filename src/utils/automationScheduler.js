@@ -15,7 +15,7 @@ async function checkAutomatedQuizzes(client) {
 
         for (const config of configs) {
             const lastQuiz = config.last_auto_quiz ? new Date(config.last_auto_quiz) : new Date(0);
-            const intervalMs = config.quiz_interval_minutes * 60 * 1000;
+            const intervalMs = config.quiz_interval_minutes * 1000; // stored as seconds now
 
             if (now - lastQuiz >= intervalMs) {
                 const guild = client.guilds.cache.get(config.guild_id);
@@ -50,8 +50,8 @@ async function checkAutomatedQuizzes(client) {
 }
 
 function initScheduler(client) {
-    // Check every 60 seconds
-    setInterval(() => checkAutomatedQuizzes(client), 60000);
+    // Check every 10 seconds
+    setInterval(() => checkAutomatedQuizzes(client), 10000);
 }
 
 module.exports = { initScheduler };

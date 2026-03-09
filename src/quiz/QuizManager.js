@@ -95,9 +95,14 @@ async function startLobby(interaction) {
     collector.on('end', async () => {
         if (game.players.size === 0) {
             activeGames.delete(interaction.channelId);
-            return interaction.followUp(buildError("No participants identified. Protocol aborted.").toJSON());
+            return interaction.followUp(buildError("No participants identified. Protocol aborted.").toJSON()).catch(e => console.error(e));
         }
-        await startNextRound(interaction, game);
+        try {
+            await startNextRound(interaction, game);
+        } catch (e) {
+            console.error('[QUIZ] critical error starting next round', e);
+            activeGames.delete(interaction.channelId);
+        }
     });
 }
 
@@ -169,7 +174,12 @@ async function startNextRound(interaction, game) {
     });
 
     collector.on('end', async () => {
-        await startNextRound(interaction, game);
+        try {
+            await startNextRound(interaction, game);
+        } catch(e) {
+            console.error('[QUIZ] critical error continuing round loops', e);
+            activeGames.delete(game.channelId);
+        }
     });
 }
 

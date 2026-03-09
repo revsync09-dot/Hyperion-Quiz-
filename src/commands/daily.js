@@ -14,10 +14,12 @@ module.exports = {
             return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), flags: 64 });
         }
 
+        await interaction.deferReply({ flags: 64 });
+
         let dbUser = await User.getOrCreate(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL());
         
         if (!dbUser) {
-            return interaction.reply({ ...buildError("Player not identified in Hyperion Database.").toJSON(), flags: 64 });
+            return interaction.editReply({ ...buildError("Player not identified in Hyperion Database.").toJSON() });
         }
 
         const now = new Date();
@@ -34,7 +36,7 @@ module.exports = {
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(`❌ **COOLDOWN ACTIVE**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **Daily Capital Distribution**\nStatus: **Denied**\nAuthentication: **Invalid**\n\nRetry authorized in **${hours}h ${minutes}m**.`)));
-            return interaction.reply({ ...container.toJSON(), flags: 64 });
+            return interaction.editReply({ ...container.toJSON() });
         }
 
         let streak = dbUser.daily_streak || 0;
@@ -64,6 +66,6 @@ module.exports = {
                 new TextDisplayBuilder().setContent(`\n*Visit the Web Dashboard to track your growth.*`)
             ));
         
-        await interaction.reply(container.toJSON());
+        await interaction.editReply(container.toJSON());
     }
 };

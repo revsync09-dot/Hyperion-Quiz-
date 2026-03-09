@@ -2,33 +2,18 @@
 // Guild IDs configured in .env
 const emojiCache = new Map();
 
-const EMOJI_NAMES = {
-    COIN: 'coin',
-    TROPHY: 'trophy',
-    LEVEL: 'level',
-    QUIZ: 'quiz',
-    FIRST: 'first',
-    SECOND: 'second',
-    THIRD: 'third',
-    ONE: 'one',
-    TWO: 'two',
-    THREE: 'three',
-    FOUR: 'four',
-};
-
-// Fallback unicode emojis
-const FALLBACKS = {
-    COIN: '🪙',
-    TROPHY: '🏆',
-    LEVEL: '⭐',
-    QUIZ: '❓',
-    FIRST: '🥇',
-    SECOND: '🥈',
-    THIRD: '🥉',
-    ONE: '1️⃣',
-    TWO: '2️⃣',
-    THREE: '3️⃣',
-    FOUR: '4️⃣',
+const EMOJI_CONFIG = {
+    COIN: { name: 'coin', fallback: '🪙' },
+    TROPHY: { name: 'trophy', fallback: '🏆' },
+    LEVEL: { name: 'level', fallback: '⭐' },
+    QUIZ: { name: 'quiz', fallback: '❓' },
+    FIRST: { name: 'first', fallback: '🥇' },
+    SECOND: { name: 'second', fallback: '🥈' },
+    THIRD: { name: 'third', fallback: '🥉' },
+    ONE: { name: 'one', fallback: '1️⃣' },
+    TWO: { name: 'two', fallback: '2️⃣' },
+    THREE: { name: 'three', fallback: '3️⃣' },
+    FOUR: { name: 'four', fallback: '4️⃣' },
 };
 
 async function loadEmojis(client) {
@@ -68,22 +53,24 @@ function getEmoji(key) {
     const envVal = process.env[envKey];
     
     if (envVal) {
-        // If it's just a numeric ID, format it (assuming it's a static emoji for now, or just use ID if client handles it)
-        // Usually, to display, we need <:name:id>. If we only have ID, we might need a generic name.
         if (/^\d+$/.test(envVal)) {
-            return `<:emoji:${envVal}>`;
+            // Find the actual emoji in the cached guild emojis to get correct animated state and name
+            for (const formatted of emojiCache.values()) {
+                if (formatted.includes(envVal)) return formatted;
+            }
+            return `<:e:${envVal}>`; // standard fallback
         }
         return envVal;
     }
 
     // 2. Check guild cache
-    const mappedName = EMOJI_NAMES[key];
+    const mappedName = EMOJI_CONFIG[key]?.name;
     if (mappedName && emojiCache.has(mappedName)) {
         return emojiCache.get(mappedName);
     }
 
     // 3. Fallback
-    return FALLBACKS[key] || '❔';
+    return EMOJI_CONFIG[key]?.fallback || '❔';
 }
 
 function getCustomEmoji(name) {
@@ -96,6 +83,7 @@ function getCustomEmoji(name) {
 }
 
 module.exports = {
+    EMOJI_CONFIG,
     loadEmojis,
     getEmoji,
     getCustomEmoji,

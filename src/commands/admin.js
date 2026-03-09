@@ -27,7 +27,7 @@ module.exports = {
             sub.setName('autoquiz')
                .setDescription('Configure Automated Quiz Deployment (AQD)')
                .addChannelOption(opt => opt.setName('channel').setDescription('Target Channel for auto quizzes').setRequired(true))
-               .addIntegerOption(opt => opt.setName('interval').setDescription('Interval in minutes').setRequired(true))
+               .addIntegerOption(opt => opt.setName('interval').setDescription('Interval in seconds').setRequired(true))
                .addBooleanOption(opt => opt.setName('enabled').setDescription('Enable or disable auto quizzes').setRequired(true))
         ),
     async execute(interaction) {
@@ -86,7 +86,7 @@ module.exports = {
                 const container = new ContainerBuilder()
                     .setAccentColor(0x6c63ff)
                     .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`✅ **AUTOMATED QUIZ DEPLOYMENT CONFIGURED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nTarget Channel: <#${channel.id}>\nInterval: **${interval} minutes**\nStatus: **${enabled ? 'ACTIVE' : 'DISABLED'}**`)
+                        new TextDisplayBuilder().setContent(`✅ **AUTOMATED QUIZ DEPLOYMENT CONFIGURED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nTarget Channel: <#${channel.id}>\nInterval: **${interval} seconds**\nStatus: **${enabled ? 'ACTIVE' : 'DISABLED'}**`)
                     ));
 
                 await interaction.reply({ ...container.toJSON(), flags: 64 });

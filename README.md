@@ -33,14 +33,27 @@ SUPABASE_KEY=your_supabase_key
 # Custom Emojis (Provide Guild IDs where emojis are located)
 EMOJI_GUILD_IDS=guild_id_1,guild_id_2
 
-# Manual Emoji Overrides (Optional)
-EMOJI_ONE=1️⃣
-EMOJI_TWO=2️⃣
-EMOJI_THREE=3️⃣
-EMOJI_FOUR=4️⃣
-EMOJI_COIN=🪙
-EMOJI_TROPHY=🏆
-EMOJI_QUIZ=❓
+# Bot Emoji Overrides (Optional: Discord emoji IDs or unicode)
+EMOJI_COIN=
+EMOJI_TROPHY=
+EMOJI_LEVEL=
+EMOJI_QUIZ=
+EMOJI_FIRST=
+EMOJI_SECOND=
+EMOJI_THIRD=
+EMOJI_ONE=
+EMOJI_TWO=
+EMOJI_THREE=
+EMOJI_FOUR=
+
+# Website Public Emoji Overrides (Optional: Discord emoji IDs or unicode)
+NEXT_PUBLIC_EMOJI_COIN=
+NEXT_PUBLIC_EMOJI_TROPHY=
+NEXT_PUBLIC_EMOJI_LEVEL=
+NEXT_PUBLIC_EMOJI_QUIZ=
+NEXT_PUBLIC_EMOJI_FIRST=
+NEXT_PUBLIC_EMOJI_SECOND=
+NEXT_PUBLIC_EMOJI_THIRD=
 ```
 
 ## 🚀 Deployment
