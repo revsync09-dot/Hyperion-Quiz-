@@ -31,18 +31,6 @@ const ROUNDS = [
 ];
 
 const activeGames = new Map();
-const SAFE_TEXT_OPTION_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
-
-function getSafeTextChoiceEmoji(index) {
-    const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
-    const resolved = getEmoji(keys[index]);
-
-    if (typeof resolved === 'string' && (resolved.startsWith('<:') || resolved.startsWith('<a:'))) {
-        return resolved;
-    }
-
-    return SAFE_TEXT_OPTION_EMOJIS[index] || `${index + 1}.`;
-}
 
 async function fetchQuestion(categoryId, difficulty) {
     try {
@@ -176,26 +164,27 @@ async function startNextRound(interaction, game) {
         return interaction.followUp(buildError('Data stream interrupted. Session terminated.').toJSON());
     }
 
-    const buttonEmojis = [
-        getComponentEmoji('ONE'),
-        getComponentEmoji('TWO'),
-        getComponentEmoji('THREE'),
-        getComponentEmoji('FOUR')
-    ];
     const coinEmoji = getEmoji('COIN');
 
     const headerText =
         `${getEmoji('CHART')} **HYPERION ROUND ${game.round} / 5**\n` +
-        `Mission Data\n` +
+        `**MISSION DATA**\n` +
         `Complexity: **${roundInfo.level}**\n` +
         `Value: **${roundInfo.points}** ${coinEmoji}\n` +
         `Sector: **${category.name}**`;
 
     const choicesText = questionData.choices
-        .map((choice, index) => `${getSafeTextChoiceEmoji(index)} ${choice}`)
+        .map((choice, index) => {
+            const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
+            return `${getEmoji(keys[index])} ${choice}`;
+        })
         .join('\n');
 
-    const questionText = `**QUESTION**\n${questionData.question}\n\n**ANSWER OPTIONS**\n${choicesText}`;
+    const questionContent = 
+        `**QUESTION**\n` +
+        `>>> ${questionData.question}\n\n` +
+        `**ANSWER OPTIONS**\n` +
+        `${choicesText}`;
 
     const container = new ContainerBuilder()
         .setAccentColor(0x2563eb)
@@ -204,16 +193,17 @@ async function startNextRound(interaction, game) {
         )
         .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
         .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(questionText))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(questionContent))
         );
 
     const row = new ActionRowBuilder();
     questionData.choices.forEach((_, index) => {
+        const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
         row.addComponents(
             new ButtonBuilder()
                 .setCustomId(`quiz_ans_${index}`)
                 .setLabel(`${index + 1}`)
-                .setEmoji(buttonEmojis[index])
+                .setEmoji(getComponentEmoji(keys[index]))
                 .setStyle(ButtonStyle.Secondary)
         );
     });
