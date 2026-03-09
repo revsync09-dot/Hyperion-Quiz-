@@ -265,6 +265,24 @@ async function startNextRound(interaction, game) {
     });
 
     collector.on('end', async () => {
+        if (answered.size === 0) {
+            activeGames.delete(game.channelId);
+
+            await interaction.channel.send(
+                buildPanel({
+                    icon: getEmoji('ERROR'),
+                    title: 'QUIZ TERMINATED',
+                    accentColor: 0xff4444,
+                    lines: [
+                        'No one answered within the round timer.',
+                        'The current quiz session has been aborted.'
+                    ]
+                }).toJSON()
+            ).catch(console.error);
+
+            return;
+        }
+
         try {
             await startNextRound(interaction, game);
         } catch (error) {
