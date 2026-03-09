@@ -8,7 +8,6 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, A
 import Link from "next/link";
 import DiscordEmoji from "@/components/DiscordEmoji";
 import DiscordAvatar from "@/components/DiscordAvatar";
-import { siteConfig } from "@/lib/siteConfig";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -37,7 +36,7 @@ export default function PlayerPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-[#0b0f19] p-6 text-center text-white">
         <h1 className="mb-4 text-3xl font-black sm:text-4xl">ENTITY NOT FOUND</h1>
-        <p className="mb-8 max-w-md text-[#9ca3af]">The player ID {id} was not identified in the {siteConfig.guildName} database.</p>
+        <p className="mb-8 max-w-md text-[#9ca3af]">The player ID {id} was not identified in the Hyperion database.</p>
         <Link href="/leaderboard" className="btn-gradient">Return to Leaderboard</Link>
       </div>
     );
@@ -91,7 +90,7 @@ export default function PlayerPage() {
                   {player.username || "Anonymous"}
                 </h1>
                 <p className="max-w-xl text-sm uppercase tracking-[0.2em] text-[#9ca3af] sm:text-base">
-                  Member of the {siteConfig.guildName} server since {new Date(player.created_at).toLocaleDateString()}
+                  Member of the Quiz Meister server since {new Date(player.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -146,7 +145,7 @@ export default function PlayerPage() {
                 <h3 className="mb-4 text-lg font-black uppercase tracking-widest sm:text-xl">Active Status</h3>
                 <div className="flex items-center gap-4 text-sm font-black tracking-tight text-emerald-400 sm:text-lg">
                   <div className="h-3 w-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
-                  SYNCED WITH {siteConfig.protocolName.toUpperCase()}
+                  SYNCED WITH HYPERION CORE
                 </div>
               </div>
             </div>

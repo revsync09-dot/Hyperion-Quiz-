@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Trophy, Home, BarChart3, Radio, LogOut, User as UserIcon } from "lucide-react";
 import { fetchBotStatus } from "@/lib/api";
 import { supabaseBrowser } from "@/lib/supabase-browser";
-import { siteConfig } from "@/lib/siteConfig";
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -69,11 +68,11 @@ export default function Navbar() {
             <Link href="/" className="group flex min-w-0 items-center gap-3">
               <img 
                 src="/logo.png" 
-                alt={`${siteConfig.botName} Logo`} 
+                alt="Quiz Meister Logo" 
                 className="w-10 h-10 rounded-xl shadow-lg shadow-[#6c63ff]/30 object-cover"
               />
               <span className="truncate text-base font-bold tracking-tight bg-gradient-to-r from-white to-muted bg-clip-text text-transparent transition-all duration-300 group-hover:from-[#6c63ff] group-hover:to-[#9d4edd] sm:text-lg">
-                {siteConfig.botName}
+                Quiz Meister
               </span>
             </Link>
 
