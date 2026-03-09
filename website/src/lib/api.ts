@@ -1,9 +1,9 @@
 // Internal API Fetchers for Hyperion Website
 // Using relative paths to hit Next.js Serverless Functions in the same deployment
 
-export async function fetchLeaderboard(category = "total_points", page = 1) {
+export async function fetchLeaderboard(category = "total_points", page = 1, timeframe = "all") {
   try {
-    const res = await fetch(`/api/leaderboard?category=${category}&page=${page}`, {
+    const res = await fetch(`/api/leaderboard?category=${category}&page=${page}&timeframe=${timeframe}`, {
       cache: "no-store",
     });
     if (!res.ok) return { users: [], total: 0 };

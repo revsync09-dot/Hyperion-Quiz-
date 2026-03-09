@@ -10,13 +10,20 @@ import DiscordAvatar from "@/components/DiscordAvatar";
 
 const TABS = [
   { key: "total_points", label: "Total Points", icon: Target },
-  { key: "coins", label: "Coins", icon: Coins },
+  { key: "coins", label: "Wealth", icon: Coins },
   { key: "quiz_wins", label: "Quiz Wins", icon: Trophy },
-  { key: "level", label: "Level", icon: Star },
+  { key: "level", label: "Leveling", icon: Star },
+];
+
+const TIMEFRAMES = [
+  { key: "all", label: "All Time" },
+  { key: "weekly", label: "Weekly" },
+  { key: "monthly", label: "Monthly" },
 ];
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState("total_points");
+  const [timeframe, setTimeframe] = useState("all");
   const [users, setUsers] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -26,7 +33,7 @@ export default function LeaderboardPage() {
   async function loadUsers() {
     setLoading(true);
     try {
-      const data = await fetchLeaderboard(tab, page);
+      const data = await fetchLeaderboard(tab, page, timeframe);
       setUsers(data?.users || []);
       setTotal(data?.total || 0);
     } finally {
@@ -36,7 +43,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     loadUsers();
-  }, [tab, page]);
+  }, [tab, page, timeframe]);
 
   const totalPages = Math.ceil(total / 10) || 1;
 
@@ -91,25 +98,49 @@ export default function LeaderboardPage() {
             <p className="text-[#9ca3af] text-lg font-medium">The elite of the server. Updated in real-time.</p>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {TABS.map((currentTab) => (
-                <button
-                  key={currentTab.key}
-                  onClick={() => {
-                    setTab(currentTab.key);
-                    setPage(1);
-                  }}
-                  className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 ${
-                    tab === currentTab.key
-                      ? "bg-gradient-to-r from-[#6c63ff] to-[#9d4edd] text-white shadow-[0_0_20px_rgba(108,99,255,0.3)]"
-                      : "bg-white/5 text-[#9ca3af] border border-white/5 hover:border-[#6c63ff]/30 hover:text-white"
-                  }`}
-                >
-                  <currentTab.icon size={18} />
-                  {currentTab.label}
-                </button>
-              ))}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                {TIMEFRAMES.map((tf) => (
+                  <button
+                    key={tf.key}
+                    onClick={() => {
+                      setTimeframe(tf.key);
+                      setPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                      timeframe === tf.key
+                        ? "bg-[#6c63ff] text-white"
+                        : "bg-white/5 text-[#9ca3af] hover:bg-white/10"
+                    }`}
+                  >
+                    {tf.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                {TABS.map((currentTab) => (
+                  <button
+                    key={currentTab.key}
+                    disabled={timeframe !== "all"}
+                    onClick={() => {
+                      setTab(currentTab.key);
+                      setPage(1);
+                    }}
+                    className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                      timeframe !== "all" 
+                        ? "opacity-30 cursor-not-allowed grayscale" 
+                        : tab === currentTab.key
+                        ? "bg-gradient-to-r from-[#6c63ff] to-[#9d4edd] text-white shadow-[0_0_20px_rgba(108,99,255,0.3)]"
+                        : "bg-white/5 text-[#9ca3af] border border-white/5 hover:border-[#6c63ff]/30 hover:text-white"
+                    }`}
+                  >
+                    <currentTab.icon size={18} />
+                    {currentTab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="relative w-full max-w-sm">
