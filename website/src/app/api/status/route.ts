@@ -1,9 +1,9 @@
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('system_status')
       .select('*')
       .eq('id', 'hyperion_bot')
@@ -23,7 +23,8 @@ export async function GET() {
       active_games: data.active_games || 0,
       last_seen: data.last_heartbeat
     });
-  } catch (err: any) {
-    return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ status: 'error', message }, { status: 500 });
   }
 }

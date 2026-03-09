@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 function buildUpdateSignature(update: {
@@ -19,7 +19,7 @@ function buildUpdateSignature(update: {
 
 export async function GET() {
   try {
-    const { data: updates, error } = await supabase
+    const { data: updates, error } = await supabaseServer
       .from('system_updates')
       .select('*')
       .order('created_at', { ascending: false })
@@ -39,7 +39,8 @@ export async function GET() {
       success: true,
       updates: dedupedUpdates
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 const PRIMARY_GUILD_ID = '1422969507734884374';
@@ -56,19 +56,19 @@ export async function GET() {
     const sinceIso = since.toISOString();
 
     const [usersResponse, gamesResponse, economyResponse, resultsResponse] = await Promise.all([
-      supabase.from('users').select('total_points, quiz_wins, games_played, coins, correct_answers'),
-      supabase
+      supabaseServer.from('users').select('total_points, quiz_wins, games_played, coins, correct_answers'),
+      supabaseServer
         .from('quiz_games')
         .select('id, ended_at')
         .eq('guild_id', PRIMARY_GUILD_ID)
         .gte('ended_at', sinceIso)
         .order('ended_at', { ascending: true }),
-      supabase
+      supabaseServer
         .from('economy_logs')
         .select('created_at, amount')
         .gte('created_at', sinceIso)
         .order('created_at', { ascending: true }),
-      supabase
+      supabaseServer
         .from('quiz_results')
         .select('user_id, quiz_games(ended_at)')
         .gte('quiz_games.ended_at', sinceIso)

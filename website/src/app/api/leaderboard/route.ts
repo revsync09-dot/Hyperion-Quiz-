@@ -1,4 +1,5 @@
-import { supabase } from '@/lib/supabase';
+import { buildTimedLeaderboard } from '@/lib/leaderboard';
+import { supabaseServer } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -9,15 +10,23 @@ export async function GET(request: Request) {
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  let tableName = 'users';
-  if (timeframe === 'weekly') tableName = 'leaderboard_weekly';
-  else if (timeframe === 'monthly') tableName = 'leaderboard_monthly';
-
   try {
-    const { data: users, count, error } = await supabase
-      .from(tableName)
+    if (timeframe === 'weekly' || timeframe === 'monthly') {
+      const days = timeframe === 'weekly' ? 7 : 30;
+      const rankedUsers = await buildTimedLeaderboard(days);
+      const users = rankedUsers.slice(skip, skip + limit);
+
+      return NextResponse.json({
+        users,
+        total: rankedUsers.length,
+        totalPages: Math.ceil(rankedUsers.length / limit),
+      });
+    }
+
+    const { data: users, count, error } = await supabaseServer
+      .from('users')
       .select('*', { count: 'exact' })
-      .order(timeframe === 'all' ? category : 'total_points', { ascending: false })
+      .order(category, { ascending: false })
       .range(skip, skip + limit - 1);
 
     if (error) throw error;
@@ -27,7 +36,8 @@ export async function GET(request: Request) {
       total: count,
       totalPages: Math.ceil((count || 0) / limit),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
