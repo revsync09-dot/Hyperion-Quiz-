@@ -91,7 +91,7 @@ async function startLobby(interaction) {
         lines: [
             'Recruitment phase active. Click **Join Session** to authenticate.',
             '',
-            'Deployment begins in **15 seconds**.'
+            'Deployment begins in **1 minute**.'
         ]
     });
 
@@ -108,7 +108,7 @@ async function startLobby(interaction) {
     const message = typeof interaction.fetchReply === 'function'
         ? await interaction.fetchReply()
         : replyResult;
-    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
+    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 60000 });
 
     collector.on('collect', async (buttonInteraction) => {
         if (buttonInteraction.customId !== 'quiz_join') return;
@@ -210,7 +210,7 @@ async function startNextRound(interaction, game) {
     container.addActionRowComponents(row);
 
     const message = await interaction.channel.send(container.toJSON());
-    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
+    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 60000 });
     const answered = new Set();
 
     collector.on('collect', async (buttonInteraction) => {

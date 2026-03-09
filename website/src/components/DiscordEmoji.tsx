@@ -76,8 +76,20 @@ async function loadEmojiMap() {
 }
 
 function emojiUrl(value: string) {
-  if (!/^\d+$/.test(value)) return null;
-  return `https://cdn.discordapp.com/emojis/${value}.webp?size=64&quality=lossless`;
+  if (!value) return null;
+  
+  // 1. If it's just the ID
+  if (/^\d+$/.test(value)) {
+    return `https://cdn.discordapp.com/emojis/${value}.webp?size=64&quality=lossless`;
+  }
+  
+  // 2. If it's the full markup <:name:id> or <a:name:id>
+  const match = value.match(/<a?:[^:]+:(\d+)>/);
+  if (match) {
+    return `https://cdn.discordapp.com/emojis/${match[1]}.webp?size=64&quality=lossless`;
+  }
+
+  return null;
 }
 
 export default function DiscordEmoji({
