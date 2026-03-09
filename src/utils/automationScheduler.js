@@ -3,6 +3,27 @@ const QuizManager = require('../quiz/QuizManager');
 
 const runningGuilds = new Set();
 
+async function claimAutoQuizSlot(config) {
+    const intervalMinutes = Math.max(1, Number(config.quiz_interval_minutes) || 0);
+    const cutoffIso = new Date(Date.now() - intervalMinutes * 60 * 1000).toISOString();
+    const claimIso = new Date().toISOString();
+
+    const { data, error } = await supabase
+        .from('guild_config')
+        .update({ last_auto_quiz: claimIso })
+        .eq('guild_id', config.guild_id)
+        .eq('is_auto_quiz_enabled', true)
+        .or(`last_auto_quiz.is.null,last_auto_quiz.lte.${cutoffIso}`)
+        .select('guild_id,last_auto_quiz')
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    return Boolean(data);
+}
+
 async function checkAutomatedQuizzes(client) {
     try {
         const { data: configs, error } = await supabase
@@ -37,6 +58,11 @@ async function checkAutomatedQuizzes(client) {
             runningGuilds.add(config.guild_id);
 
             try {
+                const claimed = await claimAutoQuizSlot(config);
+                if (!claimed) {
+                    continue;
+                }
+
                 let lastMessage = null;
 
                 const fakeInteraction = {
@@ -63,15 +89,6 @@ async function checkAutomatedQuizzes(client) {
 
                 console.log(`[AUTO-QUIZ] Initiating protocol in ${guild.name} (#${channel.name})`);
                 await QuizManager.startLobby(fakeInteraction);
-
-                const { error: updateError } = await supabase
-                    .from('guild_config')
-                    .update({ last_auto_quiz: new Date().toISOString() })
-                    .eq('guild_id', config.guild_id);
-
-                if (updateError) {
-                    throw updateError;
-                }
             } catch (error) {
                 console.error('[AUTO-QUIZ] Scheduler Failure:', error.message);
             } finally {
