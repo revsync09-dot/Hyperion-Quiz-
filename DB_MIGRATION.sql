@@ -99,3 +99,17 @@ CREATE POLICY "Allow all read access to system_updates" ON system_updates FOR SE
 INSERT INTO system_updates (version, title, category, content, is_major)
 VALUES 
 ('v2.5.0', 'Hyperion Engagement Protocol: Launch', 'GENERAL', 'Initial v2.5.0 release of the Hyperion bot and website ecosystem. Features full Supabase integration, live status tracking, and a premium terminal-inspired UI.', true);
+-- 5. Guild Configuration
+CREATE TABLE IF NOT EXISTS guild_config (
+    guild_id TEXT PRIMARY KEY,
+    quiz_channel_id TEXT,
+    quiz_interval_minutes INTEGER DEFAULT 60,
+    is_auto_quiz_enabled BOOLEAN DEFAULT false,
+    last_auto_quiz timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+-- Policies for guild_config
+ALTER TABLE guild_config ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow read access to guild_config" ON guild_config FOR SELECT USING (true);
+CREATE POLICY "Allow all to Service Role for guild_config" ON guild_config FOR ALL USING (true);

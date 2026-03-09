@@ -46,6 +46,14 @@ client.once(Events.ClientReady, async (c) => {
 
     // Start Bot Heartbeat for Website Status
     startHeartbeat(() => QuizManager.getActiveGamesCount());
+
+    try {
+        const { initScheduler } = require('./utils/automationScheduler');
+        initScheduler(c);
+        console.log('[CORE] Automation Scheduler Initialized.');
+    } catch (err) {
+        console.error('[CORE] Failed to init scheduler:', err);
+    }
     
     // Web API is moving to Next.js for Vercel support
     // api.startServer();
