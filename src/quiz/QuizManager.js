@@ -31,6 +31,7 @@ const ROUNDS = [
 ];
 
 const activeGames = new Map();
+const BUTTON_CHOICE_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
 
 function getChoiceEmojiByIndex(index) {
     const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
@@ -204,6 +205,7 @@ async function startNextRound(interaction, game) {
             new ButtonBuilder()
                 .setCustomId(`quiz_ans_${index}`)
                 .setLabel(`${index + 1}`)
+                .setEmoji(BUTTON_CHOICE_EMOJIS[index] || `${index + 1}️⃣`)
                 .setStyle(ButtonStyle.Secondary)
         );
     });
