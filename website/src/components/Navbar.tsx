@@ -54,9 +54,11 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#9d4edd] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#6c63ff]/30">
-                Q
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="Quiz Meister Logo" 
+                className="w-10 h-10 rounded-xl shadow-lg shadow-[#6c63ff]/30 object-cover"
+              />
               <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-muted bg-clip-text text-transparent group-hover:from-[#6c63ff] group-hover:to-[#9d4edd] transition-all duration-300">
                 Quiz Meister
               </span>
