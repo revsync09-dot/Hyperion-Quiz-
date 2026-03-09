@@ -63,25 +63,36 @@ async function loadEmojis(client) {
 }
 
 function getEmoji(key) {
-    // First check cache by the mapped name
+    // 1. Check .env overrides FIRST (High Priority)
+    const envKey = `EMOJI_${key}`;
+    const envVal = process.env[envKey];
+    
+    if (envVal) {
+        // If it's just a numeric ID, format it (assuming it's a static emoji for now, or just use ID if client handles it)
+        // Usually, to display, we need <:name:id>. If we only have ID, we might need a generic name.
+        if (/^\d+$/.test(envVal)) {
+            return `<:emoji:${envVal}>`;
+        }
+        return envVal;
+    }
+
+    // 2. Check guild cache
     const mappedName = EMOJI_NAMES[key];
     if (mappedName && emojiCache.has(mappedName)) {
         return emojiCache.get(mappedName);
     }
 
-    // Check .env overrides
-    const envKey = `EMOJI_${key}`;
-    if (process.env[envKey]) {
-        return process.env[envKey];
-    }
-
-    // Fallback
+    // 3. Fallback
     return FALLBACKS[key] || '❔';
 }
 
-// Get any emoji by its custom name
 function getCustomEmoji(name) {
-    return emojiCache.get(name?.toLowerCase()) || name;
+    const lowerName = name?.toLowerCase();
+    // Check .env for dynamic keys like EMOJI_MYCUSTOM
+    if (process.env[`EMOJI_${name?.toUpperCase()}`]) {
+        return process.env[`EMOJI_${name?.toUpperCase()}`];
+    }
+    return emojiCache.get(lowerName) || name;
 }
 
 module.exports = {

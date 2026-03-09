@@ -33,6 +33,7 @@ class ContainerBuilder {
         this.embed = new EmbedBuilder();
         this.sections = [];
         this.actionRows = [];
+        this.footerText = "Hyperion Protocol v2.4.1";
     }
 
     setAccentColor(color) {
@@ -42,7 +43,7 @@ class ContainerBuilder {
     }
 
     setTitle(title) {
-        this.embed.setTitle(title);
+        this.title = title;
         return this;
     }
 
@@ -70,7 +71,16 @@ class ContainerBuilder {
      * Map the "V2" structure into a high-end Message Object
      */
     toJSON() {
-        this.embed.setDescription(this.sections.filter(Boolean).join('\n'));
+        // We use fields to simulate 'sections' for a more structured V2 look
+        const mainContent = this.sections.filter(Boolean).join('\n');
+        
+        if (this.title) {
+            this.embed.setAuthor({ name: this.title, iconURL: 'https://i.imgur.com/8Q3uX7U.png' }); // Hyperion Pulse icon
+        }
+
+        this.embed.setDescription(mainContent);
+        this.embed.setFooter({ text: this.footerText });
+        this.embed.setTimestamp();
         
         return {
             embeds: [this.embed.toJSON()],

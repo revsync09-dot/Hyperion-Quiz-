@@ -15,7 +15,7 @@ export default function Footer() {
               <span className="text-lg font-bold text-white">Hyperion Quiz</span>
             </div>
             <p className="text-sm text-[#9ca3af] leading-relaxed">
-              The ultimate server-exclusive quiz bot. Compete, earn coins, and reach the top.
+              You want do know your Stats of the Quiz bot so you came to the right place
             </p>
           </div>
 
