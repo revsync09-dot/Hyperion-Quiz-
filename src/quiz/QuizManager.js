@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, StringSelectMenuBuilder } = require('discord.js');
 const {
     ContainerBuilder,
     SectionBuilder,
@@ -80,6 +80,27 @@ function buildQuestionKey(question) {
     return `${question.category}|${question.difficulty}|${question.question}`;
 }
 
+function resolveLobbyCategory(game) {
+    const voteCounts = new Map();
+
+    for (const categoryName of game.categoryVotes.values()) {
+        voteCounts.set(categoryName, (voteCounts.get(categoryName) || 0) + 1);
+    }
+
+    if (voteCounts.size === 0) {
+        return CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+    }
+
+    const sorted = [...voteCounts.entries()].sort((left, right) => right[1] - left[1]);
+    const highestVotes = sorted[0][1];
+    const finalists = sorted
+        .filter(([, votes]) => votes === highestVotes)
+        .map(([categoryName]) => categoryName);
+
+    const selectedName = finalists[Math.floor(Math.random() * finalists.length)];
+    return CATEGORIES.find((category) => category.name === selectedName) || CATEGORIES[0];
+}
+
 function getLocalQuestion(categoryName, difficulty, usedQuestions) {
     const allowedCategories = CATEGORY_ALIASES[categoryName] || [categoryName];
     const pool = localQuestions.filter((question) =>
@@ -155,6 +176,8 @@ async function startLobby(interaction) {
         guildId: interaction.guildId,
         isAutoDeploy: Boolean(interaction.isAutoDeploy),
         players: new Map(),
+        categoryVotes: new Map(),
+        selectedCategory: null,
         round: 0,
         gameState: 'lobby',
         usedQuestions: new Set()
@@ -168,44 +191,82 @@ async function startLobby(interaction) {
         accentColor: 0x6c63ff,
         lines: [
             'Recruitment phase active. Click **Join Session** to authenticate.',
+            'Select the quiz sector below. The majority vote decides the full session category.',
             '',
             'Deployment begins in **1 minute**.'
         ]
     });
 
-    const row = new ActionRowBuilder().addComponents(
+    const joinRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId('quiz_join')
             .setLabel('Join Session')
             .setEmoji(getComponentEmoji('ROCKET'))
             .setStyle(ButtonStyle.Primary)
     );
-    container.addActionRowComponents(row);
+    const categoryRow = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+            .setCustomId('quiz_category')
+            .setPlaceholder('Choose the quiz category')
+            .addOptions(
+                CATEGORIES.map((category) => ({
+                    label: category.name,
+                    value: category.name,
+                    description: `Vote for a full ${category.name} session`
+                }))
+            )
+    );
+    container.addActionRowComponents(joinRow, categoryRow);
 
     const replyResult = await interaction.reply(container.toJSON());
     const message = typeof interaction.fetchReply === 'function'
         ? await interaction.fetchReply()
         : replyResult;
-    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 60000 });
+    const collector = message.createMessageComponentCollector({ time: 60000 });
 
-    collector.on('collect', async (buttonInteraction) => {
-        if (buttonInteraction.customId !== 'quiz_join') return;
+    collector.on('collect', async (componentInteraction) => {
+        if (componentInteraction.customId === 'quiz_join') {
+            await componentInteraction.deferUpdate().catch(() => {});
 
-        // Acknowledge the interaction immediately to avoid timeouts (essential for high-traffic sessions)
-        await buttonInteraction.deferUpdate().catch(() => {});
+            if (game.players.has(componentInteraction.user.id)) return;
 
-        if (game.players.has(buttonInteraction.user.id)) return;
+            game.players.set(componentInteraction.user.id, {
+                points: 0,
+                correct_answers: 0,
+                username: componentInteraction.user.username,
+                avatar: componentInteraction.user.displayAvatarURL()
+            });
 
-        game.players.set(buttonInteraction.user.id, {
-            points: 0,
-            correct_answers: 0,
-            username: buttonInteraction.user.username,
-            avatar: buttonInteraction.user.displayAvatarURL()
-        });
+            await componentInteraction.followUp({
+                ...buildSuccess('Join Confirmed', `Session joined. Stand by for round start. ${getEmoji('ROCKET')}`).toJSON(),
+                flags: 64
+            }).catch(() => {});
+            return;
+        }
 
-        // Use followUp for confirmation since the main interaction was deferred
-        await buttonInteraction.followUp({
-            ...buildSuccess('Join Confirmed', `Session joined. Stand by for round start. ${getEmoji('ROCKET')}`).toJSON(),
+        if (componentInteraction.customId !== 'quiz_category') {
+            return;
+        }
+
+        const selectedCategory = componentInteraction.values?.[0];
+        if (!selectedCategory) {
+            return componentInteraction.reply({
+                ...buildError('No category was selected.').toJSON(),
+                flags: 64
+            }).catch(() => {});
+        }
+
+        if (!game.players.has(componentInteraction.user.id)) {
+            return componentInteraction.reply({
+                ...buildError('Join the session first before voting for a category.').toJSON(),
+                flags: 64
+            }).catch(() => {});
+        }
+
+        game.categoryVotes.set(componentInteraction.user.id, selectedCategory);
+
+        await componentInteraction.reply({
+            ...buildSuccess('Category Vote Recorded', `Your vote was recorded for **${selectedCategory}**.`).toJSON(),
             flags: 64
         }).catch(() => {});
     });
@@ -219,6 +280,20 @@ async function startLobby(interaction) {
         }
 
         try {
+            game.selectedCategory = resolveLobbyCategory(game);
+
+            await interaction.channel.send(
+                buildPanel({
+                    icon: getEmoji('SUCCESS'),
+                    title: 'QUIZ CATEGORY LOCKED',
+                    accentColor: 0x00c851,
+                    lines: [
+                        `Selected sector: **${game.selectedCategory.name}**`,
+                        `Votes recorded: **${game.categoryVotes.size}**`
+                    ]
+                }).toJSON()
+            ).catch(console.error);
+
             await startNextRound(interaction, game);
         } catch (error) {
             console.error('[QUIZ] Critical error starting next round:', error);
@@ -236,7 +311,7 @@ async function startNextRound(interaction, game) {
     }
 
     const roundInfo = ROUNDS[game.round - 1];
-    const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+    const category = game.selectedCategory || CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
     const questionData =
         getLocalQuestion(category.name, roundInfo.level, game.usedQuestions) ||
         await fetchQuestion(category.id, roundInfo.apiDiff);
