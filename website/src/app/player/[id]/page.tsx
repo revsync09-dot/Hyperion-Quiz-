@@ -7,6 +7,7 @@ import { fetchPlayer } from "@/lib/api";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import Link from "next/link";
 import DiscordEmoji from "@/components/DiscordEmoji";
+import DiscordAvatar from "@/components/DiscordAvatar";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -79,11 +80,13 @@ export default function PlayerPage() {
             <div className="relative">
               <div className="w-40 h-40 rounded-3xl bg-gradient-to-br from-[#6c63ff] to-[#9d4edd] p-1 shadow-2xl skew-y-2">
                 <div className="w-full h-full rounded-2xl bg-[#0b0f19] flex items-center justify-center text-6xl font-black -skew-y-2 overflow-hidden">
-                  {p.avatar ? (
-                    <img src={p.avatar} alt={p.username} className="w-full h-full object-cover opacity-90" />
-                  ) : (
-                    p.username?.[0]?.toUpperCase() || "H"
-                  )}
+                  <DiscordAvatar
+                    src={p.avatar}
+                    alt={p.username || "Anonymous"}
+                    fallback={p.username?.[0]?.toUpperCase() || "H"}
+                    className="w-full h-full object-cover opacity-90 flex items-center justify-center"
+                    textClassName="text-6xl font-black"
+                  />
                 </div>
               </div>
               <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center justify-center font-black text-2xl shadow-xl">
