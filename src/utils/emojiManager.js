@@ -1,6 +1,6 @@
 // Emoji Manager - Fetches custom emojis from Discord servers
-// Guild IDs configured in .env
 const emojiCache = new Map();
+const emojiIdCache = new Map();
 
 const EMOJI_CONFIG = {
     COIN: { name: 'coin', fallback: '🪙' },
@@ -27,30 +27,30 @@ const EMOJI_CONFIG = {
 };
 
 async function loadEmojis(client) {
-    const guildIds = (process.env.EMOJI_GUILD_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
-    
-    if (guildIds.length === 0) {
-        console.log('[EMOJI] No guild IDs provided. Using fallback emojis.');
-        return;
-    }
+    console.log(`[EMOJI] Loading emojis from all connected guilds...`);
+    let totalLoaded = 0;
 
-    console.log(`[EMOJI] Loading emojis from ${guildIds.length} guilds...`);
-
-    for (const guildId of guildIds) {
+    for (const guild of client.guilds.cache.values()) {
         try {
-            const guild = await client.guilds.fetch(guildId);
-            if (!guild) continue;
-            
             const emojis = await guild.emojis.fetch();
-            
             emojis.forEach(emoji => {
                 // Store ALL emojis from these guilds for potential use
-                emojiCache.set(emoji.name?.toLowerCase(), emoji.toString());
+                emojiCache.set(emoji.id, emoji.toString());
+                if (emoji.name) {
+                    emojiCache.set(emoji.name.toLowerCase(), emoji.toString());
+                }
+                // Also populate emojiIdCache for component usage
+                emojiIdCache.set(emoji.id, {
+                    id: emoji.id,
+                    name: emoji.name,
+                    animated: emoji.animated,
+                    formatted: emoji.toString()
+                });
             });
-            
+            totalLoaded += emojis.size;
             console.log(`[EMOJI] Loaded ${emojis.size} emojis from guild: ${guild.name}`);
         } catch (err) {
-            console.warn(`[EMOJI] Could not load guild ${guildId}:`, err.message);
+            console.warn(`[EMOJI] Could not load guild ${guild.id}:`, err.message);
         }
     }
 
@@ -64,11 +64,11 @@ function getEmoji(key) {
     
     if (envVal) {
         if (/^\d+$/.test(envVal)) {
-            // Find the actual emoji in the cached guild emojis to get correct animated state and name
-            for (const formatted of emojiCache.values()) {
-                if (formatted.includes(envVal)) return formatted;
-            }
-            return `<:e:${envVal}>`; // standard fallback
+            const cachedById = emojiIdCache.get(envVal);
+            if (cachedById) return cachedById.formatted;
+
+            const fallbackName = EMOJI_CONFIG[key]?.name || 'emoji';
+            return `<:${fallbackName}:${envVal}>`;
         }
         return envVal;
     }
@@ -88,15 +88,29 @@ function getComponentEmoji(key) {
     const envVal = process.env[envKey];
     
     if (envVal) {
-        if (/^\d+$/.test(envVal)) return { id: envVal };
+        if (/^\d+$/.test(envVal)) {
+            const cachedById = emojiIdCache.get(envVal);
+            if (cachedById) {
+                return { id: cachedById.id, name: cachedById.name, animated: cachedById.animated };
+            }
+
+            return { id: envVal, name: EMOJI_CONFIG[key]?.name || 'emoji' };
+        }
+        // If they provided Unicode fallback in .env, just return string
         return envVal;
     }
 
     const mappedName = EMOJI_CONFIG[key]?.name;
     if (mappedName && emojiCache.has(mappedName)) {
         const cached = emojiCache.get(mappedName);
-        const match = cached.match(/<a?:.+:(\d+)>/);
-        if (match) return { id: match[1] };
+        const match = cached.match(/<(a?):([^:]+):(\d+)>/);
+        if (match) {
+            return {
+                id: match[3],
+                name: match[2],
+                animated: Boolean(match[1])
+            };
+        }
     }
 
     return EMOJI_CONFIG[key]?.fallback || '❔';
@@ -110,11 +124,13 @@ function getCustomEmoji(name) {
     }
     return emojiCache.get(lowerName) || name;
 }
+
 module.exports = {
     EMOJI_CONFIG,
     loadEmojis,
     getEmoji,
     getComponentEmoji,
     getCustomEmoji,
-    emojiCache
+    emojiCache,
+    emojiIdCache
 };

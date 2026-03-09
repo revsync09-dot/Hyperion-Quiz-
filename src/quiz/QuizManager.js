@@ -1,5 +1,12 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
-const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder, buildError, buildSuccess, buildInfo } = require('../utils/uiBuilders');
+const {
+    ContainerBuilder,
+    SectionBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
+    buildError,
+    buildSuccess
+} = require('../utils/uiBuilders');
 const { getEmoji, getComponentEmoji } = require('../utils/emojiManager');
 const User = require('../database/User');
 const supabase = require('../database/supabase');
@@ -7,55 +14,64 @@ const supabase = require('../database/supabase');
 const PRIMARY_GUILD_ID = '1422969507734884374';
 
 const CATEGORIES = [
-  { name: 'Gaming', id: 15 },
-  { name: 'Anime', id: 31 },
-  { name: 'General Knowledge', id: 9 },
-  { name: 'Movies', id: 11 },
-  { name: 'Music', id: 12 }
+    { name: 'Gaming', id: 15 },
+    { name: 'Anime', id: 31 },
+    { name: 'General Knowledge', id: 9 },
+    { name: 'Movies', id: 11 },
+    { name: 'Music', id: 12 }
 ];
 
 const ROUNDS = [
-  { level: 'Easy', points: 10, apiDiff: 'easy' },
-  { level: 'Medium', points: 20, apiDiff: 'medium' },
-  { level: 'Hard', points: 35, apiDiff: 'hard' },
-  { level: 'Very Hard', points: 50, apiDiff: 'hard' },
-  { level: 'Extreme', points: 100, apiDiff: 'hard' }
+    { level: 'Easy', points: 10, apiDiff: 'easy' },
+    { level: 'Medium', points: 20, apiDiff: 'medium' },
+    { level: 'Hard', points: 35, apiDiff: 'hard' },
+    { level: 'Very Hard', points: 50, apiDiff: 'hard' },
+    { level: 'Extreme', points: 100, apiDiff: 'hard' }
 ];
 
 const activeGames = new Map();
 
-async function fetchQuestion(catId, difficulty) {
-  try {
-    const res = await fetch(`https://opentdb.com/api.php?amount=1&category=${catId}&difficulty=${difficulty}&type=multiple`);
-    const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      const q = data.results[0];
-      const decode = (str) => str.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-      
-      const question = decode(q.question);
-      const correctAnswer = decode(q.correct_answer);
-      const incorrectAnswers = q.incorrect_answers.map(decode);
-      
-      const choices = [correctAnswer, ...incorrectAnswers].sort(() => Math.random() - 0.5);
-      const correctIndex = choices.indexOf(correctAnswer);
-      
-      return { question, choices, correctIndex };
+async function fetchQuestion(categoryId, difficulty) {
+    try {
+        const response = await fetch(
+            `https://opentdb.com/api.php?amount=1&category=${categoryId}&difficulty=${difficulty}&type=multiple`
+        );
+        const data = await response.json();
+
+        if (!data.results || data.results.length === 0) {
+            return null;
+        }
+
+        const decode = (value) =>
+            value
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'")
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>');
+
+        const result = data.results[0];
+        const question = decode(result.question);
+        const correctAnswer = decode(result.correct_answer);
+        const incorrectAnswers = result.incorrect_answers.map(decode);
+        const choices = [correctAnswer, ...incorrectAnswers].sort(() => Math.random() - 0.5);
+        const correctIndex = choices.indexOf(correctAnswer);
+
+        return { question, choices, correctIndex };
+    } catch (error) {
+        console.error('[QUIZ] Fetch error:', error);
+        return null;
     }
-    return null;
-  } catch (err) {
-    console.error('Fetch error:', err);
-    return null;
-  }
 }
 
 async function startLobby(interaction) {
     if (interaction.guildId !== PRIMARY_GUILD_ID) {
-        return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), flags: 64 });
+        return interaction.reply({ ...buildError('This bot only works inside the Hyperion server.').toJSON(), flags: 64 });
     }
 
     if (activeGames.has(interaction.channelId)) {
-        if (interaction.isAutoDeploy) return; // Silent abort if automated
-        return interaction.reply({ ...buildError("A quiz is already active in this channel!").toJSON(), flags: 64 });
+        if (interaction.isAutoDeploy) return;
+        return interaction.reply({ ...buildError('A quiz is already active in this channel!').toJSON(), flags: 64 });
     }
 
     const game = {
@@ -67,118 +83,177 @@ async function startLobby(interaction) {
 
     activeGames.set(interaction.channelId, game);
 
+    const lobbyText =
+        `${getEmoji('QUIZ')} **HYPERION ENGAGEMENT PROTOCOL**\n` +
+        `Recruitment Phase active. Click **Join** to authenticate.\n\n` +
+        `-------------------------\n` +
+        `Starting in 15 seconds...`;
+
     const container = new ContainerBuilder()
         .setAccentColor(0x6c63ff)
         .addSectionComponents(
-            new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${getEmoji('QUIZ')} **HYPERION ENGAGEMENT PROTOCOL**\nRecruitment Phase active. Click **Join** to authenticate.\n\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nStarting in 15 seconds...`))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(lobbyText))
         );
-        
+
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('quiz_join').setLabel('Join Session').setEmoji(getComponentEmoji('ROCKET')).setStyle(ButtonStyle.Primary)
+        new ButtonBuilder()
+            .setCustomId('quiz_join')
+            .setLabel('Join Session')
+            .setEmoji(getComponentEmoji('ROCKET'))
+            .setStyle(ButtonStyle.Primary)
     );
     container.addActionRowComponents(row);
 
     const message = await interaction.reply({ ...container.toJSON(), fetchReply: true });
-
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
 
-    collector.on('collect', async i => {
-        if (i.customId === 'quiz_join') {
-            if (game.players.has(i.user.id)) {
-                return i.reply({ ...buildError("Authentication already confirmed.").toJSON(), flags: 64 });
-            }
-            game.players.set(i.user.id, { points: 0, correct_answers: 0, username: i.user.username, avatar: i.user.displayAvatarURL() });
-            await i.reply({ ...buildSuccess("Join Confirmed", `Session joined. Stand by for round start. ${getEmoji('ROCKET')}`).toJSON(), flags: 64 });
+    collector.on('collect', async (buttonInteraction) => {
+        if (buttonInteraction.customId !== 'quiz_join') return;
+
+        if (game.players.has(buttonInteraction.user.id)) {
+            return buttonInteraction.reply({
+                ...buildError('Authentication already confirmed.').toJSON(),
+                flags: 64
+            });
         }
+
+        game.players.set(buttonInteraction.user.id, {
+            points: 0,
+            correct_answers: 0,
+            username: buttonInteraction.user.username,
+            avatar: buttonInteraction.user.displayAvatarURL()
+        });
+
+        await buttonInteraction.reply({
+            ...buildSuccess('Join Confirmed', `Session joined. Stand by for round start. ${getEmoji('ROCKET')}`).toJSON(),
+            flags: 64
+        });
     });
 
     collector.on('end', async () => {
         if (game.players.size === 0) {
             activeGames.delete(interaction.channelId);
-            return interaction.followUp(buildError("No participants identified. Protocol aborted.").toJSON()).catch(e => console.error(e));
+            return interaction.followUp(buildError('No participants identified. Protocol aborted.').toJSON()).catch(console.error);
         }
+
         try {
             await startNextRound(interaction, game);
-        } catch (e) {
-            console.error('[QUIZ] critical error starting next round', e);
+        } catch (error) {
+            console.error('[QUIZ] Critical error starting next round:', error);
             activeGames.delete(interaction.channelId);
         }
     });
 }
 
 async function startNextRound(interaction, game) {
-    game.round++;
-    if (game.round > 5) {
+    game.round += 1;
+
+    if (game.round > ROUNDS.length) {
         return endQuiz(interaction, game);
     }
 
     const roundInfo = ROUNDS[game.round - 1];
     const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-    const qData = await fetchQuestion(category.id, roundInfo.apiDiff);
+    const questionData = await fetchQuestion(category.id, roundInfo.apiDiff);
 
-    if (!qData) {
+    if (!questionData) {
         activeGames.delete(game.channelId);
-        return interaction.followUp(buildError("Data stream interrupted. Session terminated.").toJSON());
+        return interaction.followUp(buildError('Data stream interrupted. Session terminated.').toJSON());
     }
 
-    const btnEmojis = [getComponentEmoji('ONE'), getComponentEmoji('TWO'), getComponentEmoji('THREE'), getComponentEmoji('FOUR')];
-    const choicesList = qData.choices.map((c, i) => `${btnEmojis[i]} **${c}**`).join('\n');
+    const buttonEmojis = [
+        getComponentEmoji('ONE'),
+        getComponentEmoji('TWO'),
+        getComponentEmoji('THREE'),
+        getComponentEmoji('FOUR')
+    ];
+    const textEmojis = [
+        getEmoji('ONE'),
+        getEmoji('TWO'),
+        getEmoji('THREE'),
+        getEmoji('FOUR')
+    ];
+
+    const headerText =
+        `${getEmoji('CHART')} **HYPERION ROUND ${game.round} / 5**\n` +
+        `-------------------------\n` +
+        `Complexity: **${roundInfo.level}**\n` +
+        `Value: **${roundInfo.points}** ${getEmoji('COIN')}\n` +
+        `Sector: **${category.name}**`;
+
+    const choicesText = questionData.choices
+        .map((choice, index) => `${textEmojis[index]} ${choice}`)
+        .join('\n');
+
+    const questionText = `**QUESTION**\n${questionData.question}\n\n${choicesText}`;
 
     const container = new ContainerBuilder()
         .setAccentColor(0x9d4edd)
         .addSectionComponents(
-            new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${getEmoji('CHART')} **HYPERION ROUND ${game.round} / 5**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nComplexity: **${roundInfo.level}**\nValue: **${roundInfo.points}** ${getEmoji('COIN')}\nSector: **${category.name}**`))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText))
         )
         .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
         .addSectionComponents(
-            new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**QUESTION:**\n${qData.question}\n\n${choicesList}`))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(questionText))
         );
 
     const row = new ActionRowBuilder();
-    qData.choices.forEach((choice, idx) => {
+    questionData.choices.forEach((_, index) => {
         row.addComponents(
-          new ButtonBuilder()
-          .setCustomId(`quiz_ans_${idx}`)
-          .setLabel(`${idx + 1}`)
-          .setEmoji(btnEmojis[idx])
-          .setStyle(ButtonStyle.Secondary)
+            new ButtonBuilder()
+                .setCustomId(`quiz_ans_${index}`)
+                .setLabel(`${index + 1}`)
+                .setEmoji(buttonEmojis[index])
+                .setStyle(ButtonStyle.Secondary)
         );
     });
     container.addActionRowComponents(row);
 
-    const msg = await interaction.channel.send(container.toJSON());
-    const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
-
+    const message = await interaction.channel.send(container.toJSON());
+    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
     const answered = new Set();
-    collector.on('collect', async i => {
-        if (!game.players.has(i.user.id)) {
-            return i.reply({ ...buildError("You are not authorized for this session.").toJSON(), flags: 64 });
-        }
-        if (answered.has(i.user.id)) {
-            return i.reply({ ...buildError("Response already recorded.").toJSON(), flags: 64 });
+
+    collector.on('collect', async (buttonInteraction) => {
+        if (!game.players.has(buttonInteraction.user.id)) {
+            return buttonInteraction.reply({
+                ...buildError('You are not authorized for this session.').toJSON(),
+                flags: 64
+            });
         }
 
-        answered.add(i.user.id);
-        const choiceIdx = parseInt(i.customId.split('_')[2]);
-        const playerData = game.players.get(i.user.id);
+        if (answered.has(buttonInteraction.user.id)) {
+            return buttonInteraction.reply({
+                ...buildError('Response already recorded.').toJSON(),
+                flags: 64
+            });
+        }
 
-        if (choiceIdx === qData.correctIndex) {
+        answered.add(buttonInteraction.user.id);
+        const choiceIndex = parseInt(buttonInteraction.customId.split('_')[2], 10);
+        const playerData = game.players.get(buttonInteraction.user.id);
+
+        if (choiceIndex === questionData.correctIndex) {
             playerData.points += roundInfo.points;
-            playerData.correct_answers++;
-            await i.reply({ ...buildSuccess("Outcome accepted", `${getEmoji('SUCCESS')} **Positive.** Outcome accepted (+${roundInfo.points} Pts)`).toJSON(), flags: 64 });
-        } else {
-            await i.reply({ ...buildError(`${getEmoji('ERROR')} **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`).toJSON(), flags: 64 });
+            playerData.correct_answers += 1;
+
+            await buttonInteraction.reply({
+                ...buildSuccess('Outcome accepted', `Positive. Outcome accepted (+${roundInfo.points} Pts)`).toJSON(),
+                flags: 64
+            });
+            return;
         }
+
+        await buttonInteraction.reply({
+            ...buildError(`Negative. Verified answer: **${questionData.choices[questionData.correctIndex]}**`).toJSON(),
+            flags: 64
+        });
     });
 
     collector.on('end', async () => {
         try {
             await startNextRound(interaction, game);
-        } catch(e) {
-            console.error('[QUIZ] critical error continuing round loops', e);
+        } catch (error) {
+            console.error('[QUIZ] Critical error continuing round loop:', error);
             activeGames.delete(game.channelId);
         }
     });
@@ -187,70 +262,95 @@ async function startNextRound(interaction, game) {
 async function endQuiz(interaction, game) {
     activeGames.delete(game.channelId);
 
-    const playersArr = Array.from(game.players.entries()).map(([discord_id, data]) => ({ discord_id, ...data }));
-    playersArr.sort((a, b) => b.points - a.points);
+    const players = Array.from(game.players.entries()).map(([discord_id, data]) => ({ discord_id, ...data }));
+    players.sort((left, right) => right.points - left.points);
 
-    const { data: gameRecord, error: gameError } = await supabase.from('quiz_games').insert({
-        guild_id: PRIMARY_GUILD_ID,
-        ended_at: new Date(),
-        difficulty_rounds: 5
-    }).select().single();
+    const { data: gameRecord } = await supabase
+        .from('quiz_games')
+        .insert({
+            guild_id: PRIMARY_GUILD_ID,
+            ended_at: new Date(),
+            difficulty_rounds: 5
+        })
+        .select()
+        .single();
 
-    for (let i = 0; i < playersArr.length; i++) {
-        const pd = playersArr[i];
-        const dbUser = await User.getOrCreate(pd.discord_id, pd.username, pd.avatar);
+    for (let index = 0; index < players.length; index += 1) {
+        const player = players[index];
+        const dbUser = await User.getOrCreate(player.discord_id, player.username, player.avatar);
 
-        if (dbUser) {
-            const updates = {
-                quiz_wins: (dbUser.quiz_wins || 0) + (i === 0 && pd.points > 0 ? 1 : 0),
-                total_points: (dbUser.total_points || 0) + pd.points,
-                correct_answers: (dbUser.correct_answers || 0) + pd.correct_answers,
-                games_played: (dbUser.games_played || 0) + 1,
-                coins: (dbUser.coins || 0) + Math.floor(pd.points * 0.5)
-            };
-            
-            await User.save(pd.discord_id, updates);
+        if (!dbUser) continue;
 
-            if (gameRecord) {
-              await supabase.from('quiz_results').insert({
-                  quiz_id: gameRecord.id,
-                  user_id: dbUser.id,
-                  score: pd.points,
-                  position: i + 1
-              });
-              if (pd.points > 0) {
-                await User.updateCoins(pd.discord_id, Math.floor(pd.points * 0.5), 'quiz_reward');
-              }
-            }
+        const reward = Math.floor(player.points * 0.5);
+        const updates = {
+            quiz_wins: (dbUser.quiz_wins || 0) + (index === 0 && player.points > 0 ? 1 : 0),
+            total_points: (dbUser.total_points || 0) + player.points,
+            correct_answers: (dbUser.correct_answers || 0) + player.correct_answers,
+            games_played: (dbUser.games_played || 0) + 1,
+            coins: (dbUser.coins || 0) + reward
+        };
+
+        await User.save(player.discord_id, updates);
+
+        if (!gameRecord) continue;
+
+        await supabase.from('quiz_results').insert({
+            quiz_id: gameRecord.id,
+            user_id: dbUser.id,
+            score: player.points,
+            position: index + 1
+        });
+
+        if (player.points > 0) {
+            await User.updateCoins(player.discord_id, reward, 'quiz_reward');
         }
     }
 
-    let resultText = '';
     const medals = { 1: getEmoji('FIRST'), 2: getEmoji('SECOND'), 3: getEmoji('THIRD') };
+    const resultText = players
+        .map((player, index) => {
+            const rank = index + 1;
+            const reward = Math.floor(player.points * 0.5);
+            return `${medals[rank] || `${rank}.`} **<@${player.discord_id}>** - ${player.points} Pts (+${reward} ${getEmoji('COIN')})`;
+        })
+        .join('\n');
 
-    playersArr.forEach((p, idx) => {
-        const rank = idx + 1;
-        const reward = Math.floor(p.points * 0.5);
-        resultText += `${medals[rank] || rank + '.'} **<@${p.discord_id}>** — ${p.points} Pts (+${reward} ${getEmoji('COIN')})\n`;
-    });
+    const summaryText = `${getEmoji('TROPHY')} **HYPERION TOURNAMENT FINALIZED**\n-------------------------`;
 
     const container = new ContainerBuilder()
         .setAccentColor(0x6c63ff)
         .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(`${getEmoji('TROPHY')} **HYPERION TOURNAMENT FINALIZED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"))
+            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(summaryText))
         )
         .addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(resultText || 'Insufficient engagement.'))
+            new SectionBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(resultText || 'Insufficient engagement.')
+            )
         );
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('btn_play_again').setLabel('Re-Engage').setEmoji(getComponentEmoji('REFRESH')).setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId('btn_view_leaderboard').setLabel('Global Ranks').setEmoji(getComponentEmoji('TROPHY')).setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId('btn_view_profile').setLabel('Access Profile').setEmoji(getComponentEmoji('PROFILE')).setStyle(ButtonStyle.Secondary)
+        new ButtonBuilder()
+            .setCustomId('btn_play_again')
+            .setLabel('Re-Engage')
+            .setEmoji(getComponentEmoji('REFRESH'))
+            .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+            .setCustomId('btn_view_leaderboard')
+            .setLabel('Global Ranks')
+            .setEmoji(getComponentEmoji('TROPHY'))
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('btn_view_profile')
+            .setLabel('Access Profile')
+            .setEmoji(getComponentEmoji('PROFILE'))
+            .setStyle(ButtonStyle.Secondary)
     );
     container.addActionRowComponents(row);
 
     await interaction.channel.send(container.toJSON());
 }
 
-module.exports = { startLobby, getActiveGamesCount: () => activeGames.size };
+module.exports = {
+    startLobby,
+    getActiveGamesCount: () => activeGames.size
+};

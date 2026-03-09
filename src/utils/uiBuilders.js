@@ -26,7 +26,7 @@ class SeparatorBuilder {
     constructor() { this.divider = false; }
     setDivider(val) { this.divider = val; return this; }
     setSpacing(val) { return this; }
-    toJSON() { return this.divider ? "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" : ""; }
+    toJSON() { return this.divider ? "------------------------------" : ""; }
 }
 
 class ContainerBuilder {
