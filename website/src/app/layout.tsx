@@ -6,6 +6,11 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Quiz Meister - Exclusive Server Quiz Bot",
   description: "Compete, earn coins, climb the leaderboard. The ultimate competitive experience exclusive to the server.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

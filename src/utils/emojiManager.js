@@ -122,13 +122,13 @@ function getEmoji(key) {
 function getComponentEmoji(key) {
     const envEmoji = resolveEnvEmoji(key);
     if (envEmoji?.id) {
-        return { id: envEmoji.id };
+        return { id: envEmoji.id, name: envEmoji.name || 'emoji', animated: envEmoji.animated || false };
     }
 
     const mappedName = EMOJI_CONFIG[key]?.name;
     const cachedDefault = resolveCachedEmojiByName(mappedName);
     if (cachedDefault?.id) {
-        return { id: cachedDefault.id };
+        return { id: cachedDefault.id, name: cachedDefault.name || 'emoji', animated: cachedDefault.animated || false };
     }
 
     return getFallbackEmoji(key);
