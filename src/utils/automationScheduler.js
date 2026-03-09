@@ -21,7 +21,8 @@ async function checkAutomatedQuizzes(client) {
             }
 
             const lastQuiz = config.last_auto_quiz ? new Date(config.last_auto_quiz) : new Date(0);
-            const intervalMs = config.quiz_interval_minutes * 1000;
+            const intervalMinutes = Math.max(1, Number(config.quiz_interval_minutes) || 0);
+            const intervalMs = intervalMinutes * 60 * 1000;
 
             if (now - lastQuiz < intervalMs) {
                 continue;

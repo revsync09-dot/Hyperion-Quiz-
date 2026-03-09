@@ -36,7 +36,7 @@ module.exports = {
                 .setName('autoquiz')
                 .setDescription('Configure Automated Quiz Deployment (AQD)')
                 .addChannelOption((opt) => opt.setName('channel').setDescription('Target Channel for auto quizzes').setRequired(true))
-                .addIntegerOption((opt) => opt.setName('interval').setDescription('Interval in seconds').setRequired(true))
+                .addIntegerOption((opt) => opt.setName('interval').setDescription('Interval in minutes').setRequired(true))
                 .addBooleanOption((opt) => opt.setName('enabled').setDescription('Enable or disable auto quizzes').setRequired(true))
         ),
 
@@ -109,7 +109,7 @@ module.exports = {
                     accentColor: 0x6c63ff,
                     lines: [
                         `Target Channel: <#${channel.id}>`,
-                        `Interval: **${interval} seconds**`,
+                        `Interval: **${interval} minute${interval === 1 ? '' : 's'}**`,
                         `Status: **${enabled ? 'ACTIVE' : 'DISABLED'}**`
                     ]
                 });

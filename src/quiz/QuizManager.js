@@ -31,6 +31,18 @@ const ROUNDS = [
 ];
 
 const activeGames = new Map();
+const SAFE_TEXT_OPTION_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
+
+function getSafeTextChoiceEmoji(index) {
+    const keys = ['ONE', 'TWO', 'THREE', 'FOUR'];
+    const resolved = getEmoji(keys[index]);
+
+    if (typeof resolved === 'string' && (resolved.startsWith('<:') || resolved.startsWith('<a:'))) {
+        return resolved;
+    }
+
+    return SAFE_TEXT_OPTION_EMOJIS[index] || `${index + 1}.`;
+}
 
 async function fetchQuestion(categoryId, difficulty) {
     try {
@@ -86,12 +98,12 @@ async function startLobby(interaction) {
 
     const container = buildPanel({
         icon: getEmoji('QUIZ'),
-        title: 'HYPERION QUIZ START',
+        title: 'HYPERION ENGAGEMENT PROTOCOL',
         accentColor: 0x6c63ff,
         lines: [
-            'Recruitment Phase active. Click **Join** to authenticate.',
+            'Recruitment phase active. Click **Join Session** to authenticate.',
             '',
-            'Starting in **15 seconds**.'
+            'Deployment begins in **15 seconds**.'
         ]
     });
 
@@ -170,28 +182,23 @@ async function startNextRound(interaction, game) {
         getComponentEmoji('THREE'),
         getComponentEmoji('FOUR')
     ];
-    const textEmojis = [
-        getEmoji('ONE'),
-        getEmoji('TWO'),
-        getEmoji('THREE'),
-        getEmoji('FOUR')
-    ];
+    const coinEmoji = getEmoji('COIN');
 
     const headerText =
         `${getEmoji('CHART')} **HYPERION ROUND ${game.round} / 5**\n` +
-        `-------------------------\n` +
+        `Mission Data\n` +
         `Complexity: **${roundInfo.level}**\n` +
-        `Value: **${roundInfo.points}** ${getEmoji('COIN')}\n` +
+        `Value: **${roundInfo.points}** ${coinEmoji}\n` +
         `Sector: **${category.name}**`;
 
     const choicesText = questionData.choices
-        .map((choice, index) => `${textEmojis[index]} ${choice}`)
+        .map((choice, index) => `${getSafeTextChoiceEmoji(index)} ${choice}`)
         .join('\n');
 
-    const questionText = `**QUESTION**\n${questionData.question}\n\n${choicesText}`;
+    const questionText = `**QUESTION**\n${questionData.question}\n\n**ANSWER OPTIONS**\n${choicesText}`;
 
     const container = new ContainerBuilder()
-        .setAccentColor(0x9d4edd)
+        .setAccentColor(0x2563eb)
         .addSectionComponents(
             new SectionBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText))
         )
@@ -240,14 +247,14 @@ async function startNextRound(interaction, game) {
             playerData.correct_answers += 1;
 
             await buttonInteraction.reply({
-                ...buildSuccess('Outcome accepted', `Positive. Outcome accepted (+${roundInfo.points} Pts)`).toJSON(),
+                ...buildSuccess('Answer Confirmed', `Correct response recorded. +${roundInfo.points} points awarded.`).toJSON(),
                 flags: 64
             });
             return;
         }
 
         await buttonInteraction.reply({
-            ...buildError(`Negative. Verified answer: **${questionData.choices[questionData.correctIndex]}**`).toJSON(),
+            ...buildError(`Incorrect. Verified answer: **${questionData.choices[questionData.correctIndex]}**`).toJSON(),
             flags: 64
         });
     });
