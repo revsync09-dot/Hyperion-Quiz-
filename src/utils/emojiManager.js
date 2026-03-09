@@ -96,25 +96,21 @@ function getComponentEmoji(key) {
         if (/^\d+$/.test(envVal)) {
             const cachedById = emojiIdCache.get(envVal);
             if (cachedById) {
-                return { id: cachedById.id, name: cachedById.name, animated: cachedById.animated };
+                return { id: cachedById.id };
             }
 
-            return { id: envVal, name: EMOJI_CONFIG[key]?.name || 'emoji' };
+            return { id: envVal };
         }
         const normalizedName = envVal.replace(/^:|:$/g, '').toLowerCase();
         if (emojiCache.has(normalizedName)) {
             const cached = emojiCache.get(normalizedName);
             const match = cached.match(/<(a?):([^:]+):(\d+)>/);
             if (match) {
-                return {
-                    id: match[3],
-                    name: match[2],
-                    animated: Boolean(match[1])
-                };
+                return { id: match[3] };
             }
         }
 
-        return envVal;
+        return EMOJI_CONFIG[key]?.fallback || '❔';
     }
 
     const mappedName = EMOJI_CONFIG[key]?.name;
@@ -122,11 +118,7 @@ function getComponentEmoji(key) {
         const cached = emojiCache.get(mappedName);
         const match = cached.match(/<(a?):([^:]+):(\d+)>/);
         if (match) {
-            return {
-                id: match[3],
-                name: match[2],
-                animated: Boolean(match[1])
-            };
+            return { id: match[3] };
         }
     }
 

@@ -86,7 +86,7 @@ async function startLobby(interaction) {
 
     const container = buildPanel({
         icon: getEmoji('QUIZ'),
-        title: 'HYPERION ENGAGEMENT PROTOCOL',
+        title: 'HYPERION QUIZ START',
         accentColor: 0x6c63ff,
         lines: [
             'Recruitment Phase active. Click **Join** to authenticate.',
@@ -104,7 +104,10 @@ async function startLobby(interaction) {
     );
     container.addActionRowComponents(row);
 
-    const message = await interaction.reply({ ...container.toJSON(), fetchReply: true });
+    const replyResult = await interaction.reply(container.toJSON());
+    const message = typeof interaction.fetchReply === 'function'
+        ? await interaction.fetchReply()
+        : replyResult;
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
 
     collector.on('collect', async (buttonInteraction) => {

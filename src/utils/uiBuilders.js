@@ -28,7 +28,7 @@ class ContainerBuilder {
         this.embed = new EmbedBuilder();
         this.sections = [];
         this.actionRows = [];
-        this.footerText = 'Hyperion Protocol';
+        this.footerText = 'HYPERION QUIZ';
     }
 
     setAccentColor(color) {
