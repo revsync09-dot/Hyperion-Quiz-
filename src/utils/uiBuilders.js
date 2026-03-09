@@ -1,8 +1,9 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const { getEmoji } = require('./emojiManager');
 
 /**
  * Hyperion Components V2 DSL (Hybrid Implementation)
- * Provides the requested Container/Section abstraction while ensuring 
+ * Provides the requested Container/Section abstraction while ensuring
  * broad compatibility across all production Discord environments.
  */
 
@@ -67,26 +68,22 @@ class ContainerBuilder {
         return this;
     }
 
-    /**
-     * Map the "V2" structure into a high-end Message Object
-     */
     toJSON() {
-        // We use fields to simulate 'sections' for a more structured V2 look
         const mainContent = this.sections.filter(Boolean).join('\n');
-        
+
         if (this.title) {
-            this.embed.setAuthor({ name: this.title, iconURL: 'https://i.imgur.com/8Q3uX7U.png' }); // Hyperion Pulse icon
+            this.embed.setAuthor({ name: this.title, iconURL: 'https://i.imgur.com/8Q3uX7U.png' });
         }
 
         this.embed.setDescription(mainContent);
         this.embed.setFooter({ text: this.footerText });
         this.embed.setTimestamp();
-        
+
         const payload = { embeds: [this.embed.toJSON()] };
         if (this.actionRows.length > 0) {
             payload.components = this.actionRows.map(r => r.toJSON());
         }
-        
+
         return payload;
     }
 }
@@ -99,15 +96,14 @@ module.exports = {
     ActionRowBuilder,
     ButtonBuilder,
 
-    // High Level Defaults
     buildError: (message) => {
         return new ContainerBuilder()
             .setAccentColor(0xFF4444)
             .addSectionComponents(
                 new SectionBuilder()
-                .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`❌ **Error:** ${message}`)
-                )
+                    .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(`${getEmoji('ERROR')} **Error:** ${message}`)
+                    )
             );
     },
 
@@ -116,9 +112,9 @@ module.exports = {
             .setAccentColor(0x00C851)
             .addSectionComponents(
                 new SectionBuilder()
-                .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`✅ **${title}**\n${message}`)
-                )
+                    .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(`${getEmoji('SUCCESS')} **${title}**\n${message}`)
+                    )
             );
     },
 
@@ -127,9 +123,9 @@ module.exports = {
             .setAccentColor(color)
             .addSectionComponents(
                 new SectionBuilder()
-                .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`ℹ️ **${title}**\n\n${content}`)
-                )
+                    .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(`${getEmoji('INFO')} **${title}**\n\n${content}`)
+                    )
             );
     }
 };

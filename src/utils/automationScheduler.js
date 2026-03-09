@@ -26,14 +26,17 @@ async function checkAutomatedQuizzes(client) {
 
                 // Mocking an interaction for startLobby
                 const fakeInteraction = {
-                    guildId: config.guild_id,
-                    channelId: config.quiz_channel_id,
+                    isAutoDeploy: true,
+                    channelId: channel.id,
                     channel: channel,
                     user: client.user,
-                    reply: async (payload) => await channel.send(payload),
-                    followUp: async (payload) => await channel.send(payload)
+                    guildId: config.guild_id,
+                    reply: async (msg) => channel.send(msg).catch(() => {}), // Ignore send errors
+                    followUp: async (msg) => channel.send(msg).catch(() => {}),
+                    fetchReply: async () => {}, // mock
+                    deferReply: async () => {}, // mock
+                    editReply: async (msg) => channel.send(msg).catch(() => {}), // mock
                 };
-
                 console.log(`[AUTO-QUIZ] Initiating protocol in ${guild.name} (#${channel.name})`);
                 await QuizManager.startLobby(fakeInteraction);
 

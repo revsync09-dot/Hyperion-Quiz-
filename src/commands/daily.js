@@ -35,7 +35,7 @@ module.exports = {
                 .setAccentColor(0xFF4444)
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`❌ **COOLDOWN ACTIVE**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **Daily Capital Distribution**\nStatus: **Denied**\nAuthentication: **Invalid**\n\nRetry authorized in **${hours}h ${minutes}m**.`)));
+                    new TextDisplayBuilder().setContent(`${getEmoji('ERROR')} **COOLDOWN ACTIVE**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **Daily Capital Distribution**\nStatus: **Denied**\nAuthentication: **Invalid**\n\nRetry authorized in **${hours}h ${minutes}m**.`)));
             return interaction.editReply({ ...container.toJSON() });
         }
 
@@ -60,7 +60,7 @@ module.exports = {
             .setAccentColor(0x2ECC71)
             .setThumbnail(interaction.user.displayAvatarURL())
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`✅ **AUTHENTICATION ACCEPTED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **Capital Distribution**\nCapital: **+${totalReward}** ${getEmoji('COIN')}\n\n🔥 Current Streak: **${streak}** Days`)
+                new TextDisplayBuilder().setContent(`${getEmoji('SUCCESS')} **AUTHENTICATION ACCEPTED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **Capital Distribution**\nCapital: **+${totalReward}** ${getEmoji('COIN')}\n\n${getEmoji('FIRE')} Current Streak: **${streak}** Days`)
             ))
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(`\n*Visit the Web Dashboard to track your growth.*`)

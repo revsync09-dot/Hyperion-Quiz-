@@ -7,6 +7,16 @@ const EMOJI_CONFIG = {
     TROPHY: { name: 'trophy', fallback: '🏆' },
     LEVEL: { name: 'level', fallback: '⭐' },
     QUIZ: { name: 'quiz', fallback: '❓' },
+    PROFILE: { name: 'profile', fallback: '👤' },
+    GLOBE: { name: 'globe', fallback: '🌐' },
+    MONEY: { name: 'money', fallback: '💰' },
+    FIRE: { name: 'fire', fallback: '🔥' },
+    ROCKET: { name: 'rocket', fallback: '🚀' },
+    REFRESH: { name: 'refresh', fallback: '🔄' },
+    CHART: { name: 'chart', fallback: '📊' },
+    INFO: { name: 'info', fallback: 'ℹ️' },
+    SUCCESS: { name: 'success', fallback: '✅' },
+    ERROR: { name: 'error', fallback: '❌' },
     FIRST: { name: 'first', fallback: '🥇' },
     SECOND: { name: 'second', fallback: '🥈' },
     THIRD: { name: 'third', fallback: '🥉' },
@@ -73,6 +83,25 @@ function getEmoji(key) {
     return EMOJI_CONFIG[key]?.fallback || '❔';
 }
 
+function getComponentEmoji(key) {
+    const envKey = `EMOJI_${key}`;
+    const envVal = process.env[envKey];
+    
+    if (envVal) {
+        if (/^\d+$/.test(envVal)) return { id: envVal };
+        return envVal;
+    }
+
+    const mappedName = EMOJI_CONFIG[key]?.name;
+    if (mappedName && emojiCache.has(mappedName)) {
+        const cached = emojiCache.get(mappedName);
+        const match = cached.match(/<a?:.+:(\d+)>/);
+        if (match) return { id: match[1] };
+    }
+
+    return EMOJI_CONFIG[key]?.fallback || '❔';
+}
+
 function getCustomEmoji(name) {
     const lowerName = name?.toLowerCase();
     // Check .env for dynamic keys like EMOJI_MYCUSTOM
@@ -81,11 +110,11 @@ function getCustomEmoji(name) {
     }
     return emojiCache.get(lowerName) || name;
 }
-
 module.exports = {
     EMOJI_CONFIG,
     loadEmojis,
     getEmoji,
+    getComponentEmoji,
     getCustomEmoji,
     emojiCache
 };

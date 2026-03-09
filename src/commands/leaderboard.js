@@ -24,7 +24,7 @@ module.exports = {
         const container = new ContainerBuilder()
             .setAccentColor(0x6c63ff)
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`🏆 **GLOBAL RANKINGS MOVED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nThe official Quiz Meister Leaderboard is now hosted on our dedicated web terminal for real-time tracking.\n\n🌐 **[Access Leaderboard Here](${process.env.WEBSITE_URL || 'https://hyperion-quiz.vercel.app'}/leaderboard)**`)
+                new TextDisplayBuilder().setContent(`${getEmoji('TROPHY')} **GLOBAL RANKINGS MOVED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nThe official Quiz Meister Leaderboard is now hosted on our dedicated web terminal for real-time tracking.\n\n${getEmoji('GLOBE')} **[Access Leaderboard Here](${process.env.WEBSITE_URL || 'https://hyperion-quiz.vercel.app'}/leaderboard)**`)
             ));
 
         const row = new ActionRowBuilder().addComponents(

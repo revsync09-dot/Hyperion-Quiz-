@@ -1,6 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder, buildError, buildSuccess, buildInfo } = require('../utils/uiBuilders');
-const { getEmoji } = require('../utils/emojiManager');
+const { getEmoji, getComponentEmoji } = require('../utils/emojiManager');
 const User = require('../database/User');
 const supabase = require('../database/supabase');
 
@@ -54,6 +54,7 @@ async function startLobby(interaction) {
     }
 
     if (activeGames.has(interaction.channelId)) {
+        if (interaction.isAutoDeploy) return; // Silent abort if automated
         return interaction.reply({ ...buildError("A quiz is already active in this channel!").toJSON(), flags: 64 });
     }
 
@@ -74,11 +75,11 @@ async function startLobby(interaction) {
         );
         
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('quiz_join').setLabel('Join Session').setEmoji('🚀').setStyle(ButtonStyle.Primary)
+        new ButtonBuilder().setCustomId('quiz_join').setLabel('Join Session').setEmoji(getComponentEmoji('ROCKET')).setStyle(ButtonStyle.Primary)
     );
     container.addActionRowComponents(row);
 
-    const message = await interaction.reply({ ...container.toJSON(), withResponse: true });
+    const message = await interaction.reply({ ...container.toJSON(), fetchReply: true });
 
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
 
@@ -88,7 +89,7 @@ async function startLobby(interaction) {
                 return i.reply({ ...buildError("Authentication already confirmed.").toJSON(), flags: 64 });
             }
             game.players.set(i.user.id, { points: 0, correct_answers: 0, username: i.user.username, avatar: i.user.displayAvatarURL() });
-            await i.reply({ ...buildSuccess("Join Confirmed", "Session joined. Stand by for round start. 🚀").toJSON(), flags: 64 });
+            await i.reply({ ...buildSuccess("Join Confirmed", `Session joined. Stand by for round start. ${getEmoji('ROCKET')}`).toJSON(), flags: 64 });
         }
     });
 
@@ -121,14 +122,14 @@ async function startNextRound(interaction, game) {
         return interaction.followUp(buildError("Data stream interrupted. Session terminated.").toJSON());
     }
 
-    const btnEmojis = [getEmoji('ONE'), getEmoji('TWO'), getEmoji('THREE'), getEmoji('FOUR')];
+    const btnEmojis = [getComponentEmoji('ONE'), getComponentEmoji('TWO'), getComponentEmoji('THREE'), getComponentEmoji('FOUR')];
     const choicesList = qData.choices.map((c, i) => `${btnEmojis[i]} **${c}**`).join('\n');
 
     const container = new ContainerBuilder()
         .setAccentColor(0x9d4edd)
         .addSectionComponents(
             new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`📊 **HYPERION ROUND ${game.round} / 5**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nComplexity: **${roundInfo.level}**\nValue: **${roundInfo.points}** ${getEmoji('COIN')}\nSector: **${category.name}**`))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${getEmoji('CHART')} **HYPERION ROUND ${game.round} / 5**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nComplexity: **${roundInfo.level}**\nValue: **${roundInfo.points}** ${getEmoji('COIN')}\nSector: **${category.name}**`))
         )
         .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
         .addSectionComponents(
@@ -167,9 +168,9 @@ async function startNextRound(interaction, game) {
         if (choiceIdx === qData.correctIndex) {
             playerData.points += roundInfo.points;
             playerData.correct_answers++;
-            await i.reply({ ...buildSuccess("Outcome accepted", `✅ **Positive.** Outcome accepted (+${roundInfo.points} Pts)`).toJSON(), flags: 64 });
+            await i.reply({ ...buildSuccess("Outcome accepted", `${getEmoji('SUCCESS')} **Positive.** Outcome accepted (+${roundInfo.points} Pts)`).toJSON(), flags: 64 });
         } else {
-            await i.reply({ ...buildError(`❌ **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`).toJSON(), flags: 64 });
+            await i.reply({ ...buildError(`${getEmoji('ERROR')} **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`).toJSON(), flags: 64 });
         }
     });
 
@@ -243,9 +244,9 @@ async function endQuiz(interaction, game) {
         );
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('btn_play_again').setLabel('Re-Engage').setEmoji('🔄').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId('btn_view_leaderboard').setLabel('Global Ranks').setEmoji(getEmoji('TROPHY')).setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId('btn_view_profile').setLabel('Access Profile').setEmoji('👤').setStyle(ButtonStyle.Secondary)
+        new ButtonBuilder().setCustomId('btn_play_again').setLabel('Re-Engage').setEmoji(getComponentEmoji('REFRESH')).setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('btn_view_leaderboard').setLabel('Global Ranks').setEmoji(getComponentEmoji('TROPHY')).setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('btn_view_profile').setLabel('Access Profile').setEmoji(getComponentEmoji('PROFILE')).setStyle(ButtonStyle.Secondary)
     );
     container.addActionRowComponents(row);
 

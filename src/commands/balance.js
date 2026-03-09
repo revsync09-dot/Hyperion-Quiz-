@@ -28,7 +28,7 @@ module.exports = {
             .setAccentColor(0xF1C40F)
             .setThumbnail(target.displayAvatarURL())
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`💰 **HYPERION CAPITAL DASHBOARD**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nAuthentication: **Confirmed**\nAccount Holder: **${target.username.toUpperCase()}**\n\nBalance: **${(user.coins || 0).toLocaleString()}** ${coinEmoji}`)
+                new TextDisplayBuilder().setContent(`${getEmoji('MONEY')} **HYPERION CAPITAL DASHBOARD**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nAuthentication: **Confirmed**\nAccount Holder: **${target.username.toUpperCase()}**\n\nBalance: **${(user.coins || 0).toLocaleString()}** ${coinEmoji}`)
             ))
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(`\n*Visit the Web Terminal for detailed transaction logs.*`)

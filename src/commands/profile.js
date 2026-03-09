@@ -20,7 +20,7 @@ module.exports = {
         const container = new ContainerBuilder()
             .setAccentColor(0x6c63ff)
             .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`👤 **PLAYER PROFILES MOVED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nDetailed player analytics for **${target.username}** are now hosted on our dedicated web terminal.\n\n🌐 **[Access Player Profile Here](${process.env.WEBSITE_URL || 'https://hyperion-quiz.vercel.app'}/player/${target.id})**`)
+                new TextDisplayBuilder().setContent(`${getEmoji('PROFILE')} **PLAYER PROFILES MOVED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nDetailed player analytics for **${target.username}** are now hosted on our dedicated web terminal.\n\n${getEmoji('GLOBE')} **[Access Player Profile Here](${process.env.WEBSITE_URL || 'https://hyperion-quiz.vercel.app'}/player/${target.id})**`)
             ));
 
         const row = new ActionRowBuilder().addComponents(

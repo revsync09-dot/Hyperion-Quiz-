@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, buildError } = require('../utils/uiBuilders');
 const supabase = require('../database/supabase');
+const { getEmoji } = require('../utils/emojiManager');
 
 const PRIMARY_GUILD_ID = '1422969507734884374';
 
@@ -56,7 +57,7 @@ module.exports = {
                 const container = new ContainerBuilder()
                     .setAccentColor(0x22c55e)
                     .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`✅ **PROTOCOL BROADCAST SUCCESSFUL**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **${category}**\nVersion: **${version}**\nTitle: **${title}**\n\nThe Quiz Meister has been updated with this system log.`)
+                        new TextDisplayBuilder().setContent(`${getEmoji('SUCCESS')} **PROTOCOL BROADCAST SUCCESSFUL**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nSector: **${category}**\nVersion: **${version}**\nTitle: **${title}**\n\nThe Quiz Meister has been updated with this system log.`)
                     ));
 
                 await interaction.reply({ ...container.toJSON(), flags: 64 });
@@ -86,7 +87,7 @@ module.exports = {
                 const container = new ContainerBuilder()
                     .setAccentColor(0x6c63ff)
                     .addSectionComponents(new SectionBuilder().addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`✅ **AUTOMATED QUIZ DEPLOYMENT CONFIGURED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nTarget Channel: <#${channel.id}>\nInterval: **${interval} seconds**\nStatus: **${enabled ? 'ACTIVE' : 'DISABLED'}**`)
+                        new TextDisplayBuilder().setContent(`${getEmoji('SUCCESS')} **AUTOMATED QUIZ DEPLOYMENT CONFIGURED**\n` + "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" + `\nTarget Channel: <#${channel.id}>\nInterval: **${interval} seconds**\nStatus: **${enabled ? 'ACTIVE' : 'DISABLED'}**`)
                     ));
 
                 await interaction.reply({ ...container.toJSON(), flags: 64 });
