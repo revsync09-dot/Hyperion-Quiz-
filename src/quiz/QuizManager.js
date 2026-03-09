@@ -286,8 +286,7 @@ async function endQuiz(interaction, game) {
             quiz_wins: (dbUser.quiz_wins || 0) + (index === 0 && player.points > 0 ? 1 : 0),
             total_points: (dbUser.total_points || 0) + player.points,
             correct_answers: (dbUser.correct_answers || 0) + player.correct_answers,
-            games_played: (dbUser.games_played || 0) + 1,
-            coins: (dbUser.coins || 0) + reward
+            games_played: (dbUser.games_played || 0) + 1
         };
 
         await User.save(player.discord_id, updates);

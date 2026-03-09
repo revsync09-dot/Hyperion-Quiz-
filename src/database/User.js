@@ -1,4 +1,5 @@
 const supabase = require('./supabase');
+const { calculateLevel } = require('../utils/economy');
 
 const User = {
     // Find a user by their Discord ID
@@ -36,10 +37,16 @@ const User = {
 
     // Update user information for a given Discord ID
     async save(discordId, updates) {
+        const normalizedUpdates = { ...updates };
+
+        if (normalizedUpdates.total_points !== undefined) {
+            normalizedUpdates.level = calculateLevel(normalizedUpdates.total_points);
+        }
+
         // Find by discord_id since we usually have that
         const { data, error } = await supabase
             .from('users')
-            .update(updates)
+            .update(normalizedUpdates)
             .eq('discord_id', discordId)
             .select()
             .single();

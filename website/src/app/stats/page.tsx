@@ -1,9 +1,10 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Users, Gamepad2, Coins, CheckCircle2, Trophy, TrendingUp } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, LineChart, Line } from "recharts";
 import { fetchStats } from "@/lib/api";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -15,17 +16,37 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-const COLORS = ["#6c63ff", "#9d4edd", "#22c55e", "#fbbf24", "#ef4444"];
+type DaySeries = {
+  day: string;
+  games?: number;
+  players?: number;
+  coins?: number;
+};
+
+type StatsPayload = {
+  totalUsers: number;
+  totalGamesPlayed: number;
+  totalCoins: number;
+  totalPoints: number;
+  totalQuizWins: number;
+  totalCorrectAnswers: number;
+  globalAccuracy: string | number;
+  gamesPerDay: DaySeries[];
+  activePlayersDaily: DaySeries[];
+  coinsEarnedDaily: DaySeries[];
+};
 
 export default function StatsPage() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<StatsPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     fetchStats()
-      .then((d) => { if (d?.stats) setStats(d.stats); })
+      .then((data) => {
+        if (data?.stats) setStats(data.stats);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -40,7 +61,7 @@ export default function StatsPage() {
   if (!stats) {
     return (
       <div className="pt-24 text-center min-h-screen flex items-center justify-center bg-[#0b0f19]">
-        <p className="text-[#9ca3af]">Could not load stats. Is the API running?</p>
+        <p className="text-[#9ca3af]">Could not load stats.</p>
       </div>
     );
   }
@@ -54,28 +75,9 @@ export default function StatsPage() {
     { label: "Total Points", value: stats.totalPoints, icon: TrendingUp, color: "from-red-500 to-rose-500" },
   ];
 
-  const gamesPerDay = Array.from({ length: 14 }, (_, i) => ({
-    day: `Day ${i + 1}`,
-    games: Math.floor(Math.random() * Math.max(1, stats.totalGamesPlayed / 7)) + 1,
-  }));
-
-  const activePlayersData = Array.from({ length: 14 }, (_, i) => ({
-    day: `Day ${i + 1}`,
-    players: Math.floor(Math.random() * Math.max(1, stats.totalUsers * 0.6)) + 1,
-  }));
-
-  const coinsEarnedDaily = Array.from({ length: 14 }, (_, i) => ({
-    day: `Day ${i + 1}`,
-    coins: Math.floor(Math.random() * Math.max(1, stats.totalCoins / 10)) + 100,
-  }));
-
-  const categoryData = [
-    { name: "Gaming", value: 25 },
-    { name: "Anime", value: 22 },
-    { name: "General", value: 20 },
-    { name: "Movies", value: 18 },
-    { name: "Music", value: 15 },
-  ];
+  const hasGamesData = stats.gamesPerDay.some((entry) => (entry.games || 0) > 0);
+  const hasPlayersData = stats.activePlayersDaily.some((entry) => (entry.players || 0) > 0);
+  const hasCoinsData = stats.coinsEarnedDaily.some((entry) => (entry.coins || 0) > 0);
 
   return (
     <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 bg-[#0b0f19] min-h-screen text-white">
@@ -87,32 +89,32 @@ export default function StatsPage() {
               Statistics
             </span>
           </h1>
-          <p className="text-[#9ca3af] font-bold uppercase tracking-widest text-sm">Quiz Meister System Performance Overview</p>
+          <p className="text-[#9ca3af] font-bold uppercase tracking-widest text-sm">Real system telemetry only</p>
         </motion.div>
 
         <motion.div variants={containerVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
-          {overviewCards.map((c) => (
-            <motion.div key={c.label} variants={itemVariants} className="glass-card p-5 text-center">
-              <div className={`w-10 h-10 mx-auto mb-3 rounded-xl bg-gradient-to-br ${c.color} flex items-center justify-center shadow-lg`}>
-                <c.icon size={18} className="text-white" />
+          {overviewCards.map((card) => (
+            <motion.div key={card.label} variants={itemVariants} className="glass-card p-5 text-center">
+              <div className={`w-10 h-10 mx-auto mb-3 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center shadow-lg`}>
+                <card.icon size={18} className="text-white" />
               </div>
-              <div className="text-xl font-black tracking-tighter">{(c.value || 0).toLocaleString()}</div>
-              <div className="text-[10px] text-[#9ca3af] font-black uppercase tracking-widest mt-1">{c.label}</div>
+              <div className="text-xl font-black tracking-tighter">{(card.value || 0).toLocaleString()}</div>
+              <div className="text-[10px] text-[#9ca3af] font-black uppercase tracking-widest mt-1">{card.label}</div>
             </motion.div>
           ))}
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-[#6c63ff] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Activity Log: Engagements</h3>
+            <h3 className="text-sm font-black mb-8 border-l-4 border-[#6c63ff] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Games Last 14 Days</h3>
             <div className="h-[260px] w-full">
               {!isMounted ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-[#6c63ff] border-t-transparent rounded-full animate-spin" />
                 </div>
-              ) : (
+              ) : hasGamesData ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={gamesPerDay}>
+                  <BarChart data={stats.gamesPerDay}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
                     <XAxis dataKey="day" stroke="#9ca3af" fontSize={10} axisLine={false} tickLine={false} />
                     <YAxis stroke="#9ca3af" fontSize={10} axisLine={false} tickLine={false} />
@@ -120,20 +122,22 @@ export default function StatsPage() {
                     <Bar dataKey="games" fill="#6c63ff" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+              ) : (
+                <EmptyChart message="No quiz sessions recorded in the last 14 days." />
               )}
             </div>
           </motion.div>
 
           <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-[#22c55e] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Population Density: Active Entities</h3>
+            <h3 className="text-sm font-black mb-8 border-l-4 border-[#22c55e] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Active Players Last 14 Days</h3>
             <div className="h-[260px] w-full">
               {!isMounted ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />
                 </div>
-              ) : (
+              ) : hasPlayersData ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={activePlayersData}>
+                  <AreaChart data={stats.activePlayersDaily}>
                     <defs>
                       <linearGradient id="gpActive" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
@@ -147,20 +151,22 @@ export default function StatsPage() {
                     <Area type="monotone" dataKey="players" stroke="#22c55e" fill="url(#gpActive)" strokeWidth={3} />
                   </AreaChart>
                 </ResponsiveContainer>
+              ) : (
+                <EmptyChart message="No active player history recorded in the last 14 days." />
               )}
             </div>
           </motion.div>
 
           <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-            <h3 className="text-sm font-black mb-8 border-l-4 border-amber-400 pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Economic Growth: Capital Accrual</h3>
+            <h3 className="text-sm font-black mb-8 border-l-4 border-amber-400 pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Coins Logged Last 14 Days</h3>
             <div className="h-[260px] w-full">
               {!isMounted ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
                 </div>
-              ) : (
+              ) : hasCoinsData ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={coinsEarnedDaily}>
+                  <LineChart data={stats.coinsEarnedDaily}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
                     <XAxis dataKey="day" stroke="#9ca3af" fontSize={10} axisLine={false} tickLine={false} />
                     <YAxis stroke="#9ca3af" fontSize={10} axisLine={false} tickLine={false} />
@@ -168,42 +174,33 @@ export default function StatsPage() {
                     <Line type="monotone" dataKey="coins" stroke="#fbbf24" strokeWidth={3} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
+              ) : (
+                <EmptyChart message="No coin log activity recorded in the last 14 days." />
               )}
             </div>
           </motion.div>
 
           <motion.div variants={itemVariants} className="glass-card p-10 min-h-[350px]">
-             <h3 className="text-sm font-black mb-8 border-l-4 border-[#9d4edd] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Sector Distribution: Topic Engagement</h3>
-            <div className="flex items-center justify-center h-[260px] w-full">
-              {!isMounted ? (
-                <div className="flex items-center justify-center h-full text-[#9ca3af] animate-pulse font-black text-xs tracking-widest">
-                  ALIGNED SENSORS...
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      dataKey="value"
-                      paddingAngle={4}
-                      label={({ name, percent }) => `${name} ${( (percent || 0) * 100).toFixed(0)}%`}
-                    >
-                      {categoryData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ background: "#121826", border: "1px solid #9d4edd33", borderRadius: 12, color: "#fff" }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
+            <h3 className="text-sm font-black mb-8 border-l-4 border-[#9d4edd] pl-4 uppercase tracking-[0.2em] text-[#9ca3af]">Telemetry Scope</h3>
+            <div className="flex h-[260px] items-center justify-center">
+              <div className="max-w-sm text-center">
+                <p className="text-2xl font-black tracking-tight mb-4">{stats.globalAccuracy}% Accuracy</p>
+                <p className="text-sm text-[#9ca3af] leading-7">
+                  This dashboard now shows only persisted telemetry. Topic distribution is not displayed because the current quiz schema does not store per-category history yet.
+                </p>
+              </div>
             </div>
           </motion.div>
         </div>
       </motion.div>
+    </div>
+  );
+}
+
+function EmptyChart({ message }: { message: string }) {
+  return (
+    <div className="flex h-full items-center justify-center text-center">
+      <p className="max-w-xs text-sm font-bold uppercase tracking-widest text-[#9ca3af]">{message}</p>
     </div>
   );
 }
