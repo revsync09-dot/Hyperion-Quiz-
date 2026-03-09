@@ -11,7 +11,9 @@ const {
 const { getEmoji, getComponentEmoji } = require('../utils/emojiManager');
 const User = require('../database/User');
 const supabase = require('../database/supabase');
-const localQuestions = require('./questions.json');
+const baseQuestions = require('./questions.json');
+const extraQuestions = require('./questions.extra.js');
+const localQuestions = [...baseQuestions, ...extraQuestions];
 
 const PRIMARY_GUILD_ID = '1422969507734884374';
 
