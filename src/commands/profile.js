@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder } = require('../utils/uiBuilders');
+const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder, buildError } = require('../utils/uiBuilders');
 const User = require('../database/User');
 const { getEmoji } = require('../utils/emojiManager');
 
@@ -12,14 +12,14 @@ module.exports = {
         .addUserOption(opt => opt.setName('user').setDescription('Sector authorization: Target player').setRequired(false)),
     async execute(interaction) {
         if (interaction.guildId !== PRIMARY_GUILD_ID) {
-            return interaction.reply({ content: "This bot only works inside the Hyperion server.", ephemeral: true });
+            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
         }
 
         const target = interaction.options.getUser('user') || interaction.user;
         const dbUser = await User.getOrCreate(target.id, target.username, target.displayAvatarURL());
         
         if (!dbUser) {
-            return interaction.reply({ content: "❌ Error: Player not found in Hyperion Database.", ephemeral: true });
+            return interaction.reply({ ...buildError("Player not found in Hyperion Database.").toJSON(), ephemeral: true });
         }
 
         const rank = (await User.countDocuments({ total_points: { $gt: dbUser.total_points } })) + 1;

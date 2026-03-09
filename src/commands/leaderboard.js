@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
-const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder } = require('../utils/uiBuilders');
+const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder, buildError } = require('../utils/uiBuilders');
 const User = require('../database/User');
 const { getEmoji } = require('../utils/emojiManager');
 
@@ -18,7 +18,7 @@ module.exports = {
             .setRequired(false)),
     async execute(interaction) {
         if (interaction.guildId !== PRIMARY_GUILD_ID) {
-            return interaction.reply({ content: "This bot only works inside the Hyperion server.", ephemeral: true });
+            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
         }
 
         const category = interaction.options.getString('category') || 'total_points';

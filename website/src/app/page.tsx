@@ -23,8 +23,8 @@ export default function Home() {
 
   const features = [
     { title: "Dynamic Quizzes", desc: "5 rounds of escalating difficulty from Easy to Extreme.", icon: Zap },
-    { title: "Global Economy", desc: "Earn Coins and climb the Hyperion ranks with every win.", icon: Shield },
-    { title: "Live Dashboards", desc: "Real-time accuracy and performance charts for every player.", icon: Activity },
+    { title: "Global Economy", desc: "Earn Coins and climb the Hyperion ranks with every win and become a King.", icon: Shield },
+    { title: "Live Dashboards", desc: "Real-time Leaderboards only for you.", icon: Activity },
   ];
 
   return (

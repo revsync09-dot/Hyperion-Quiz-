@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder } = require('../utils/uiBuilders');
+const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder, buildError } = require('../utils/uiBuilders');
 const User = require('../database/User');
 const { getEmoji } = require('../utils/emojiManager');
 
@@ -11,13 +11,13 @@ module.exports = {
         .setDescription('Access your Hyperion server capital records.'),
     async execute(interaction) {
         if (interaction.guildId !== PRIMARY_GUILD_ID) {
-            return interaction.reply({ content: "This bot only works inside the Hyperion server.", ephemeral: true });
+            return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
         }
 
         let dbUser = await User.getOrCreate(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL());
         
         if (!dbUser) {
-            return interaction.reply({ content: "❌ Error: Player not identified in database.", ephemeral: true });
+            return interaction.reply({ ...buildError("Player not identified in Hyperion database.").toJSON(), ephemeral: true });
         }
 
         const coinEmoji = getEmoji('COIN');

@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
-const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder } = require('../utils/uiBuilders');
+const { ContainerBuilder, SectionBuilder, TextDisplayBuilder, SeparatorBuilder, buildError, buildSuccess, buildInfo } = require('../utils/uiBuilders');
 const { getEmoji } = require('../utils/emojiManager');
 const User = require('../database/User');
 const supabase = require('../database/supabase');
@@ -50,11 +50,11 @@ async function fetchQuestion(catId, difficulty) {
 
 async function startLobby(interaction) {
     if (interaction.guildId !== PRIMARY_GUILD_ID) {
-        return interaction.reply({ content: "This bot only works inside the Hyperion server.", ephemeral: true });
+        return interaction.reply({ ...buildError("This bot only works inside the Hyperion server.").toJSON(), ephemeral: true });
     }
 
     if (activeGames.has(interaction.channelId)) {
-        return interaction.reply({ content: "A quiz is already active in this channel!", ephemeral: true });
+        return interaction.reply({ ...buildError("A quiz is already active in this channel!").toJSON(), ephemeral: true });
     }
 
     const game = {
@@ -85,17 +85,17 @@ async function startLobby(interaction) {
     collector.on('collect', async i => {
         if (i.customId === 'quiz_join') {
             if (game.players.has(i.user.id)) {
-                return i.reply({ content: "Authentication already confirmed.", ephemeral: true });
+                return i.reply({ ...buildError("Authentication already confirmed.").toJSON(), ephemeral: true });
             }
             game.players.set(i.user.id, { points: 0, correct_answers: 0, username: i.user.username, avatar: i.user.displayAvatarURL() });
-            await i.reply({ content: "Session joined. Stand by for round start. 🚀", ephemeral: true });
+            await i.reply({ ...buildSuccess("Join Confirmed", "Session joined. Stand by for round start. 🚀").toJSON(), ephemeral: true });
         }
     });
 
     collector.on('end', async () => {
         if (game.players.size === 0) {
             activeGames.delete(interaction.channelId);
-            return interaction.followUp("No participants identified. Protocol aborted.");
+            return interaction.followUp(buildError("No participants identified. Protocol aborted.").toJSON());
         }
         await startNextRound(interaction, game);
     });
@@ -113,7 +113,7 @@ async function startNextRound(interaction, game) {
 
     if (!qData) {
         activeGames.delete(game.channelId);
-        return interaction.followUp("Data stream interrupted. Session terminated.");
+        return interaction.followUp(buildError("Data stream interrupted. Session terminated.").toJSON());
     }
 
     const btnEmojis = [getEmoji('ONE'), getEmoji('TWO'), getEmoji('THREE'), getEmoji('FOUR')];
@@ -149,10 +149,10 @@ async function startNextRound(interaction, game) {
     const answered = new Set();
     collector.on('collect', async i => {
         if (!game.players.has(i.user.id)) {
-            return i.reply({ content: "You are not authorized for this session.", ephemeral: true });
+            return i.reply({ ...buildError("You are not authorized for this session.").toJSON(), ephemeral: true });
         }
         if (answered.has(i.user.id)) {
-            return i.reply({ content: "Response already recorded.", ephemeral: true });
+            return i.reply({ ...buildError("Response already recorded.").toJSON(), ephemeral: true });
         }
 
         answered.add(i.user.id);
@@ -162,9 +162,9 @@ async function startNextRound(interaction, game) {
         if (choiceIdx === qData.correctIndex) {
             playerData.points += roundInfo.points;
             playerData.correct_answers++;
-            await i.reply({ content: `✅ **Positive.** Outcome accepted (+${roundInfo.points} Pts)`, ephemeral: true });
+            await i.reply({ ...buildSuccess("Outcome accepted", `✅ **Positive.** Outcome accepted (+${roundInfo.points} Pts)`).toJSON(), ephemeral: true });
         } else {
-            await i.reply({ content: `❌ **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`, ephemeral: true });
+            await i.reply({ ...buildError(`❌ **Negative.** Verified answer: **${qData.choices[qData.correctIndex]}**`).toJSON(), ephemeral: true });
         }
     });
 

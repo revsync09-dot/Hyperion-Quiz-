@@ -8,6 +8,7 @@ const { renderLeaderboard } = require('./commands/leaderboard');
 const QuizManager = require('./quiz/QuizManager');
 const { loadEmojis } = require('./utils/emojiManager');
 const { startHeartbeat } = require('./utils/statusManager');
+const { buildError, buildInfo } = require('./utils/uiBuilders');
 
 const PRIMARY_GUILD_ID = '1422969507734884374';
 
@@ -67,9 +68,9 @@ process.on('uncaughtException', (error) => {
 client.on(Events.InteractionCreate, async interaction => {
     // SECURITY GATE: Only allow Hyperion Guild
     if (interaction.guildId !== PRIMARY_GUILD_ID) {
-        const msg = "This bot only works inside the Hyperion server.";
+        const errorView = buildError("This bot only works inside the Hyperion server.");
         if (interaction.isRepliable()) {
-          return interaction.reply({ content: msg, ephemeral: true }).catch(() => {});
+          return interaction.reply({ ...errorView.toJSON(), ephemeral: true }).catch(() => {});
         }
         return;
     }
@@ -83,11 +84,11 @@ client.on(Events.InteractionCreate, async interaction => {
             await command.execute(interaction);
         } catch (error) {
             console.error('[CORE] Command Error:', error);
-            const errorMsg = 'An unexpected error occurred in the Hyperion core.';
+            const errorView = buildError('An unexpected error occurred in the Hyperion core.');
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: errorMsg, ephemeral: true });
+                await interaction.followUp({ ...errorView.toJSON(), ephemeral: true });
             } else {
-                await interaction.reply({ content: errorMsg, ephemeral: true });
+                await interaction.reply({ ...errorView.toJSON(), ephemeral: true });
             }
         }
     } 
@@ -130,7 +131,8 @@ client.on(Events.InteractionCreate, async interaction => {
             }
 
             if (customId === 'btn_view_stats') {
-                await interaction.reply({ content: `📊 Detailed activity dashboards are available on our website!`, ephemeral: true });
+                const infoView = buildInfo("Global Analytics", "Detailed activity dashboards and historical logs are available on our official website terminal.");
+                await interaction.reply({ ...infoView.toJSON(), ephemeral: true });
                 return;
             }
         } catch (err) {
