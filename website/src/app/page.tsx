@@ -23,7 +23,7 @@ export default function Home() {
 
   const features = [
     { title: "Dynamic Quizzes", desc: "5 rounds of escalating difficulty from Easy to Extreme.", icon: Zap },
-    { title: "Global Economy", desc: "Earn Coins and climb the Hyperion ranks with every win and become a King.", icon: Shield },
+    { title: "Global Economy", desc: "Earn Coins and climb the ranks with every win and become a King.", icon: Shield },
     { title: "Live Dashboards", desc: "Real-time Leaderboards only for you.", icon: Activity },
   ];
 
@@ -44,7 +44,7 @@ export default function Home() {
                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                <div className={`w-3 h-3 rounded-full animate-pulse shadow-[0_0_10px_rgba(0,0,0,0.5)] ${botStatus.status === 'online' ? 'bg-emerald-400 shadow-emerald-400/50' : 'bg-red-500 shadow-red-500/50'}`} />
                <span className="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                 Hyperion Core {botStatus.status === 'online' ? 'Online' : 'Offline'}
+                 Quiz Meister {botStatus.status === 'online' ? 'Online' : 'Offline'}
                  {botStatus.status === 'online' && botStatus.active_games > 0 && (
                    <span className="text-[#6c63ff] ml-2">• {botStatus.active_games} Active Sessions</span>
                  )}
@@ -52,10 +52,10 @@ export default function Home() {
             </div>
 
             <h1 className="text-7xl md:text-9xl font-black tracking-tighter italic uppercase mb-6 leading-none">
-              Hyperion <span className="text-gradient">Quiz</span>
+              Quiz <span className="text-gradient">Meister</span>
             </h1>
             <p className="text-[#9ca3af] text-xl md:text-2xl font-bold uppercase tracking-widest max-w-3xl mx-auto mb-12">
-              The Official Hyperion Server Guild STATS LIVE 'CHECK IT OUT' 
+              The Official Server Guild STATS LIVE 'CHECK IT OUT' 
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">

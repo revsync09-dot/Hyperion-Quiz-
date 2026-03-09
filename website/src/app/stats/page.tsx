@@ -87,7 +87,7 @@ export default function StatsPage() {
               Statistics
             </span>
           </h1>
-          <p className="text-[#9ca3af] font-bold uppercase tracking-widest text-sm">Hyperion System Performance Overview</p>
+          <p className="text-[#9ca3af] font-bold uppercase tracking-widest text-sm">Quiz Meister System Performance Overview</p>
         </motion.div>
 
         <motion.div variants={containerVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">

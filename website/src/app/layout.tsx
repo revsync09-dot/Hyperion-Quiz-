@@ -4,8 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Hyperion Quiz - Exclusive Server Quiz Bot",
-  description: "Compete, earn coins, climb the leaderboard. The ultimate competitive experience exclusive to the Hyperion server.",
+  title: "Quiz Meister - Exclusive Server Quiz Bot",
+  description: "Compete, earn coins, climb the leaderboard. The ultimate competitive experience exclusive to the server.",
 };
 
 export default function RootLayout({

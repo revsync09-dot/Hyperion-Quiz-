@@ -10,9 +10,9 @@ export default function Footer() {
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#9d4edd] flex items-center justify-center text-white font-bold text-lg">
-                H
+                Q
               </div>
-              <span className="text-lg font-bold text-white">Hyperion Quiz</span>
+              <span className="text-lg font-bold text-white">Quiz Meister</span>
             </div>
             <p className="text-sm text-[#9ca3af] leading-relaxed">
               You want do know your Stats of the Quiz bot so you came to the right place
@@ -51,7 +51,7 @@ export default function Footer() {
 
         <div className="border-t border-white/5 mt-10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-[#9ca3af]">
-            © {new Date().getFullYear()} Hyperion Quiz. All rights reserved.
+            © {new Date().getFullYear()} Quiz Meister. All rights reserved.
           </p>
           <p className="text-xs text-[#9ca3af] flex items-center gap-1">
             Made with  <Heart size={12} className="text-red-400 fill-red-400" /> by Red_thz for you

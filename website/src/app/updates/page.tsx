@@ -40,12 +40,12 @@ export default function UpdatesPage() {
           <div className="mb-20 text-center">
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 mb-6 text-xs font-black uppercase tracking-[0.3em] text-[#9ca3af]">
                 <Activity size={14} className="text-[#6c63ff] animate-pulse" />
-                Hyperion System Log: ON
+                Quiz Meister System Log: ON
             </div>
             <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter uppercase italic">
               Update <span className="bg-gradient-to-r from-[#6c63ff] to-[#9d4edd] bg-clip-text text-transparent">Quiz Meister</span>
             </h1>
-            <p className="text-[#9ca3af] text-lg font-bold uppercase tracking-widest">Tracking the evolution of the Hyperion protocol.</p>
+            <p className="text-[#9ca3af] text-lg font-bold uppercase tracking-widest">Tracking the evolution of the Quiz Meister protocol.</p>
           </div>
 
           <div className="relative">

@@ -62,12 +62,12 @@ export default function LeaderboardPage() {
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter">
-              HYPERION{" "}
+              QUIZ MEISTER{" "}
               <span className="bg-gradient-to-r from-[#6c63ff] to-[#9d4edd] bg-clip-text text-transparent">
                 RANKINGS
               </span>
             </h1>
-            <p className="text-[#9ca3af] text-lg font-medium">The elite of the Hyperion server. Updated in real-time.</p>
+            <p className="text-[#9ca3af] text-lg font-medium">The elite of the server. Updated in real-time.</p>
           </div>
 
           {/* Search & Tabs */}
@@ -147,7 +147,7 @@ export default function LeaderboardPage() {
                               ? "bg-gradient-to-br from-[#6c63ff] to-[#9d4edd] text-white shadow-xl"
                               : "bg-white/10 text-[#9ca3af]"
                           }`}>
-                            {user.username?.[0]?.toUpperCase() || "H"}
+                            {user.username?.[0]?.toUpperCase() || "Q"}
                           </div>
                           <div className="flex flex-col">
                             <span className="font-black text-lg truncate leading-tight group-hover:text-[#6c63ff] transition-colors">{user.username || "Anonymous"}</span>
